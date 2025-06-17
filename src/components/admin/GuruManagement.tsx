@@ -83,6 +83,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
         return;
       }
 
+      console.log("GuruManagement: Names parsed from file:", names); // Log names parsed from file
       onAddMultipleGuru(names); // Call the new bulk add handler
 
       toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });

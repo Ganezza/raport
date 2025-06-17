@@ -21,6 +21,7 @@ const AdminPage = () => {
   const updateAppData = (newData: AppData) => {
     setAppData(newData);
     setAppDataState(newData);
+    console.log("AdminPage: appData updated and saved. Current guru count:", newData.guru.length, "Current guru list:", newData.guru); // Log updated guru list
   };
 
   // Settings Management Handlers
