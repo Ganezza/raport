@@ -5,7 +5,7 @@ import SettingsManagement from "@/components/admin/SettingsManagement";
 import GuruManagement from "@/components/admin/GuruManagement";
 import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
-import { Tabs, TabsContent, TabsList, TabsTrigger } => "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Perbaikan di sini
 import { useToast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
@@ -200,7 +200,7 @@ const AdminPage = () => {
               onAddGuru={handleAddGuru}
               onEditGuru={handleEditGuru}
               onDeleteGuru={handleDeleteGuru}
-              onAddMultipleGuru={handleAddMultipleGuru} // Pass the new handler
+              onAddMultipleGuru={handleAddMultipleGuru}
             />
           </TabsContent>
           <TabsContent value="kelas" className="mt-6">
@@ -209,7 +209,7 @@ const AdminPage = () => {
               onAddKelas={handleAddKelas}
               onEditKelas={handleEditKelas}
               onDeleteKelas={handleDeleteKelas}
-              onAddMultipleKelas={handleAddMultipleKelas} // Pass the new handler
+              onAddMultipleKelas={handleAddMultipleKelas}
             />
           </TabsContent>
           <TabsContent value="settings" className="mt-6">
