@@ -3,7 +3,6 @@ import { getAppData } from "@/lib/data";
 import { Antrian, Guru, Kelas } from "@/types/app";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const DisplayPage = () => {
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
@@ -128,10 +127,6 @@ const DisplayPage = () => {
           )}
         </CardContent>
       </Card>
-
-      <div className="mt-auto pt-4">
-        <MadeWithDyad />
-      </div>
     </div>
   );
 };

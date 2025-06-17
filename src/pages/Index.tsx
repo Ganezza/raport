@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -56,7 +55,6 @@ const Index = () => {
           </Link>
         </div>
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

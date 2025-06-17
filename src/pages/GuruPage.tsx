@@ -9,7 +9,6 @@ import { getAppData, setAppData, generateUniqueId, getNextQueueNumber, getNextAv
 import { Antrian, Guru, Kelas } from "@/types/app";
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
-import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const GuruPage = () => {
   const { toast } = useToast();
@@ -392,7 +391,6 @@ const GuruPage = () => {
           </div>
         )}
       </div>
-      <MadeWithDyad />
     </div>
   );
 };
