@@ -5,8 +5,7 @@ import SettingsManagement from "@/components/admin/SettingsManagement";
 import GuruManagement from "@/components/admin/GuruManagement";
 import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MadeWithDyad } from "@/components/made-with-dyad";
+import { Tabs, TabsContent, TabsList, TabsTrigger } => "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
@@ -60,6 +59,13 @@ const AdminPage = () => {
     }
   };
 
+  const handleAddMultipleGuru = (names: string[]) => {
+    if (appData) {
+      const newGuruEntries: Guru[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
+      updateAppData({ ...appData, guru: [...appData.guru, ...newGuruEntries] });
+    }
+  };
+
   // Kelas Management Handlers
   const handleAddKelas = (nama: string) => {
     if (appData) {
@@ -81,6 +87,13 @@ const AdminPage = () => {
     if (appData) {
       const filteredKelasList = appData.kelas.filter(k => k.id !== id);
       updateAppData({ ...appData, kelas: filteredKelasList });
+    }
+  };
+
+  const handleAddMultipleKelas = (names: string[]) => {
+    if (appData) {
+      const newKelasEntries: Kelas[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
+      updateAppData({ ...appData, kelas: [...appData.kelas, ...newKelasEntries] });
     }
   };
 
@@ -187,6 +200,7 @@ const AdminPage = () => {
               onAddGuru={handleAddGuru}
               onEditGuru={handleEditGuru}
               onDeleteGuru={handleDeleteGuru}
+              onAddMultipleGuru={handleAddMultipleGuru} // Pass the new handler
             />
           </TabsContent>
           <TabsContent value="kelas" className="mt-6">
@@ -195,6 +209,7 @@ const AdminPage = () => {
               onAddKelas={handleAddKelas}
               onEditKelas={handleEditKelas}
               onDeleteKelas={handleDeleteKelas}
+              onAddMultipleKelas={handleAddMultipleKelas} // Pass the new handler
             />
           </TabsContent>
           <TabsContent value="settings" className="mt-6">
@@ -206,7 +221,6 @@ const AdminPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-      <MadeWithDyad />
     </div>
   );
 };

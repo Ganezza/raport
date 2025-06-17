@@ -14,6 +14,7 @@ interface KelasManagementProps {
   onAddKelas: (nama: string) => void;
   onEditKelas: (id: string, nama: string) => void;
   onDeleteKelas: (id: string) => void;
+  onAddMultipleKelas: (names: string[]) => void; // New prop for bulk add
 }
 
 const KelasManagement: React.FC<KelasManagementProps> = ({
@@ -21,6 +22,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
   onAddKelas,
   onEditKelas,
   onDeleteKelas,
+  onAddMultipleKelas, // Destructure new prop
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -81,9 +83,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
         return;
       }
 
-      names.forEach(name => {
-        onAddKelas(name);
-      });
+      onAddMultipleKelas(names); // Call the new bulk add handler
 
       toast({ title: "Sukses!", description: `${names.length} kelas berhasil ditambahkan dari file.`, });
       setSelectedFile(null); // Clear selected file

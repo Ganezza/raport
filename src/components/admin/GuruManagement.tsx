@@ -14,6 +14,7 @@ interface GuruManagementProps {
   onAddGuru: (nama: string) => void;
   onEditGuru: (id: string, nama: string) => void;
   onDeleteGuru: (id: string) => void;
+  onAddMultipleGuru: (names: string[]) => void; // New prop for bulk add
 }
 
 const GuruManagement: React.FC<GuruManagementProps> = ({
@@ -21,6 +22,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
   onAddGuru,
   onEditGuru,
   onDeleteGuru,
+  onAddMultipleGuru, // Destructure new prop
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -81,9 +83,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
         return;
       }
 
-      names.forEach(name => {
-        onAddGuru(name);
-      });
+      onAddMultipleGuru(names); // Call the new bulk add handler
 
       toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
       setSelectedFile(null); // Clear selected file
