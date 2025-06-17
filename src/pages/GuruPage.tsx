@@ -7,9 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { getAppData, setAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot } from "@/lib/data";
 import { Antrian, Guru, Kelas } from "@/types/app";
-import { QRCodeSVG } from 'qrcode.react'; // Keep this for displaying on screen
-import QRCode from 'qrcode'; // Import qrcode for generating data URL for print
-import { MadeWithDyad } from "@/components/made-with-dyad"; // Import MadeWithDyad
+import { QRCodeSVG } from 'qrcode.react';
+import QRCode from 'qrcode';
+import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const GuruPage = () => {
   const { toast } = useToast();
@@ -110,6 +110,7 @@ const GuruPage = () => {
 
     appData.antrian.push(newAntrian);
     setAppData(appData);
+    console.log("GuruPage: Data antrian setelah penambahan:", appData.antrian.length, appData.antrian);
     setAntrianList(appData.antrian); // Update state to reflect new antrian
 
     setGeneratedAntrian(newAntrian);
@@ -135,7 +136,7 @@ const GuruPage = () => {
       try {
         qrCodeDataUrl = await QRCode.toDataURL(qrCodeValue, {
           errorCorrectionLevel: 'H',
-          width: 150, // Match the desired size
+          width: 150,
           margin: 0,
         });
       } catch (err) {
@@ -169,11 +170,10 @@ const GuruPage = () => {
         printWindow.document.write(printContent);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
-        // Give a small delay to ensure content (especially images) is rendered
         setTimeout(() => {
           printWindow.print();
-          printWindow.close(); // Close after printing
-        }, 500); // 500ms delay
+          printWindow.close();
+        }, 500);
       }
     }
   };
@@ -222,9 +222,9 @@ const GuruPage = () => {
             variant={showNewQueueForm ? "default" : "outline"}
             onClick={() => {
               setShowNewQueueForm(true);
-              setGeneratedAntrian(null); // Reset generated antrian when switching
-              setFoundActiveAntrian(null); // Reset found antrian
-              setReprintSelectedGuruId(""); // Reset reprint selection
+              setGeneratedAntrian(null);
+              setFoundActiveAntrian(null);
+              setReprintSelectedGuruId("");
             }}
           >
             Cetak Antrian Baru
@@ -234,10 +234,10 @@ const GuruPage = () => {
             variant={!showNewQueueForm ? "default" : "outline"}
             onClick={() => {
               setShowNewQueueForm(false);
-              setGeneratedAntrian(null); // Reset generated antrian when switching
-              setFoundActiveAntrian(null); // Reset found antrian
-              setSelectedGuruId(""); // Reset new queue form selection
-              setSelectedKelasId(""); // Reset new queue form selection
+              setGeneratedAntrian(null);
+              setFoundActiveAntrian(null);
+              setSelectedGuruId("");
+              setSelectedKelasId("");
               setCheckbox1(false);
               setCheckbox2(false);
               setCheckbox3(false);
