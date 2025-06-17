@@ -52,7 +52,7 @@ const Index = () => {
           </Link>
           {/* Tombol Halaman Admin telah dihapus */}
           <Link to="/display">
-            <Button className="w-full py-3 text-lg" variant="outline">Halaman Display Antrian (Mode TV)</Button>
+            <Button className="w-full py-3 text-lg" variant="outline">Cek Proses Antrian</Button>
           </Link>
         </div>
       </div>
