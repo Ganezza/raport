@@ -7,7 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { getAppData, setAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot } from "@/lib/data";
 import { Antrian, Guru, Kelas } from "@/types/app";
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react'; // Keep this for displaying on screen
+import QRCode from 'qrcode'; // Import qrcode for generating data URL for print
 
 const GuruPage = () => {
   const { toast } = useToast();
@@ -113,14 +114,39 @@ const GuruPage = () => {
     });
   };
 
-  const printQueueCard = () => {
+  const printQueueCard = async () => {
     if (generatedAntrian) {
+      const qrCodeValue = JSON.stringify({
+        id: generatedAntrian.id,
+        nomor: generatedAntrian.nomorAntrian,
+        guru: guruList.find(g => g.id === generatedAntrian.guruId)?.nama,
+        kelas: kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama,
+        jadwal: `${generatedAntrian.tanggalCetak} ${generatedAntrian.jamCetak}`
+      });
+
+      let qrCodeDataUrl = '';
+      try {
+        qrCodeDataUrl = await QRCode.toDataURL(qrCodeValue, {
+          errorCorrectionLevel: 'H',
+          width: 150, // Match the desired size
+          margin: 0,
+        });
+      } catch (err) {
+        console.error("Failed to generate QR code for print:", err);
+        toast({
+          title: "Error",
+          description: "Gagal membuat QR Code untuk dicetak.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const printContent = `
         <div style="text-align: center; padding: 20px; font-family: sans-serif;">
           <h2 style="margin-bottom: 10px;">Kartu Antrian Cetak Rapor</h2>
           <p style="font-size: 1.2em; margin-bottom: 5px;">Nomor Antrian:</p>
           <h1 style="font-size: 3em; margin-bottom: 20px; color: #007bff;">${generatedAntrian.nomorAntrian}</h1>
-          <div id="qrcode-print" style="margin: 0 auto; width: 150px; height: 150px;"></div>
+          <img src="${qrCodeDataUrl}" style="margin: 0 auto; width: 150px; height: 150px;" />
           <p style="margin-top: 20px;">Nama Guru: ${guruList.find(g => g.id === generatedAntrian.guruId)?.nama}</p>
           <p>Kelas: ${kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama}</p>
           <p>Tanggal & Jam Cetak: ${generatedAntrian.tanggalCetak} Pukul ${generatedAntrian.jamCetak}</p>
@@ -134,26 +160,6 @@ const GuruPage = () => {
         printWindow.document.write(printContent);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
-
-        // Render QR code into the new window's document
-        const qrCodeContainer = printWindow.document.getElementById('qrcode-print');
-        if (qrCodeContainer) {
-          const qrCodeCanvas = document.createElement('canvas');
-          new QRCodeSVG({
-            value: JSON.stringify({
-              id: generatedAntrian.id,
-              nomor: generatedAntrian.nomorAntrian,
-              guru: guruList.find(g => g.id === generatedAntrian.guruId)?.nama,
-              kelas: kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama,
-              jadwal: `${generatedAntrian.tanggalCetak} ${generatedAntrian.jamCetak}`
-            }),
-            size: 150,
-            level: 'H',
-            includeMargin: false,
-          }).render(qrCodeCanvas);
-          qrCodeContainer.appendChild(qrCodeCanvas);
-        }
-
         printWindow.print();
       }
     }
