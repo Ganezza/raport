@@ -72,7 +72,7 @@
     "typescript-eslint": "^8.0.1",
     "vite": "^6.3.4"
   },
-  "homepage": "https://<USERNAME>.github.io/raport",
+  "homepage": "https://ganezza.github.io/raport",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
