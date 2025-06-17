@@ -1,169 +1,260 @@
-import React, { useState, useEffect } from "react";
-import { getAppData, setAppData, generateUniqueId } from "@/lib/data";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  getAppData,
+  addGuru,
+  updateGuru,
+  deleteGuru,
+  addKelas,
+  updateKelas,
+  deleteKelas,
+  addAntrian, // Although not directly used for adding in AdminPage, it's good to have
+  updateAntrian,
+  deleteAntrian,
+  updateSettings,
+  generateUniqueId,
+} from "@/lib/data";
 import { AppData, Guru, Kelas, Antrian, AntrianStatus, Setting } from "@/types/app";
 import SettingsManagement from "@/components/admin/SettingsManagement";
 import GuruManagement from "@/components/admin/GuruManagement";
 import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Perbaikan di sini
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const data = getAppData();
-    console.log("AdminPage: Data antrian yang dimuat:", data.antrian.length, data.antrian);
-    setAppDataState(data);
-  }, []);
+  const fetchInitialData = useCallback(async () => {
+    try {
+      const data = await getAppData();
+      console.log("AdminPage: Data antrian yang dimuat:", data.antrian.length, data.antrian);
+      setAppDataState(data);
+    } catch (error) {
+      console.error("Failed to fetch initial app data:", error);
+      toast({
+        title: "Error",
+        description: "Gagal memuat data aplikasi dari database.",
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
-  const updateAppData = (newData: AppData) => {
-    setAppData(newData);
-    setAppDataState(newData);
-    console.log("AdminPage: appData updated and saved. Current guru count:", newData.guru.length, "Current guru list:", newData.guru); // Log updated guru list
-  };
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
   // Settings Management Handlers
   const handleSettingsChange = (newSettings: Setting) => {
     if (appData) {
-      updateAppData({ ...appData, setting: newSettings });
+      setAppDataState(prev => prev ? { ...prev, setting: newSettings } : null);
     }
   };
 
-  const handleSaveSettings = () => {
-    // Logic to save settings is already handled by updateAppData
-    // The toast message is handled in SettingsManagement component
+  const handleSaveSettings = async () => {
+    if (!appData) return;
+    try {
+      await updateSettings(appData.setting);
+      toast({
+        title: "Sukses!",
+        description: "Pengaturan jadwal berhasil disimpan.",
+      });
+      await fetchInitialData(); // Re-fetch to ensure consistency
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      toast({
+        title: "Error",
+        description: "Gagal menyimpan pengaturan jadwal.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Guru Management Handlers
-  const handleAddGuru = (nama: string) => {
-    if (appData) {
+  const handleAddGuru = async (nama: string) => {
+    if (!appData) return;
+    try {
       const newGuru: Guru = { id: generateUniqueId(), nama };
-      updateAppData({ ...appData, guru: [...appData.guru, newGuru] });
+      await addGuru(newGuru);
+      toast({ title: "Sukses!", description: "Guru berhasil ditambahkan." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to add guru:", error);
+      toast({ title: "Error", description: "Gagal menambahkan guru.", variant: "destructive" });
     }
   };
 
-  const handleEditGuru = (id: string, nama: string) => {
-    if (appData) {
-      const updatedGuruList = appData.guru.map(g =>
-        g.id === id ? { ...g, nama } : g
-      );
-      updateAppData({ ...appData, guru: updatedGuruList });
+  const handleEditGuru = async (id: string, nama: string) => {
+    if (!appData) return;
+    try {
+      await updateGuru({ id, nama });
+      toast({ title: "Sukses!", description: "Nama Guru berhasil diperbarui." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to edit guru:", error);
+      toast({ title: "Error", description: "Gagal memperbarui nama guru.", variant: "destructive" });
     }
   };
 
-  const handleDeleteGuru = (id: string) => {
-    if (appData) {
-      const filteredGuruList = appData.guru.filter(g => g.id !== id);
-      updateAppData({ ...appData, guru: filteredGuruList });
+  const handleDeleteGuru = async (id: string) => {
+    if (!appData) return;
+    try {
+      await deleteGuru(id);
+      toast({ title: "Sukses!", description: "Guru berhasil dihapus." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to delete guru:", error);
+      toast({ title: "Error", description: "Gagal menghapus guru.", variant: "destructive" });
     }
   };
 
-  const handleAddMultipleGuru = (names: string[]) => {
-    if (appData) {
+  const handleAddMultipleGuru = async (names: string[]) => {
+    if (!appData) return;
+    try {
       const newGuruEntries: Guru[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
-      updateAppData({ ...appData, guru: [...appData.guru, ...newGuruEntries] });
+      // Supabase insert can take an array for bulk inserts
+      const { error } = await supabase.from('guru').insert(newGuruEntries);
+      if (error) throw error;
+      toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to add multiple gurus:", error);
+      toast({ title: "Error", description: "Gagal menambahkan beberapa guru dari file.", variant: "destructive" });
     }
   };
 
   // Kelas Management Handlers
-  const handleAddKelas = (nama: string) => {
-    if (appData) {
+  const handleAddKelas = async (nama: string) => {
+    if (!appData) return;
+    try {
       const newKelas: Kelas = { id: generateUniqueId(), nama };
-      updateAppData({ ...appData, kelas: [...appData.kelas, newKelas] });
+      await addKelas(newKelas);
+      toast({ title: "Sukses!", description: "Kelas berhasil ditambahkan." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to add kelas:", error);
+      toast({ title: "Error", description: "Gagal menambahkan kelas.", variant: "destructive" });
     }
   };
 
-  const handleEditKelas = (id: string, nama: string) => {
-    if (appData) {
-      const updatedKelasList = appData.kelas.map(k =>
-        k.id === id ? { ...k, nama } : k
-      );
-      updateAppData({ ...appData, kelas: updatedKelasList });
+  const handleEditKelas = async (id: string, nama: string) => {
+    if (!appData) return;
+    try {
+      await updateKelas({ id, nama });
+      toast({ title: "Sukses!", description: "Nama Kelas berhasil diperbarui." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to edit kelas:", error);
+      toast({ title: "Error", description: "Gagal memperbarui nama kelas.", variant: "destructive" });
     }
   };
 
-  const handleDeleteKelas = (id: string) => {
-    if (appData) {
-      const filteredKelasList = appData.kelas.filter(k => k.id !== id);
-      updateAppData({ ...appData, kelas: filteredKelasList });
+  const handleDeleteKelas = async (id: string) => {
+    if (!appData) return;
+    try {
+      await deleteKelas(id);
+      toast({ title: "Sukses!", description: "Kelas berhasil dihapus." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to delete kelas:", error);
+      toast({ title: "Error", description: "Gagal menghapus kelas.", variant: "destructive" });
     }
   };
 
-  const handleAddMultipleKelas = (names: string[]) => {
-    if (appData) {
+  const handleAddMultipleKelas = async (names: string[]) => {
+    if (!appData) return;
+    try {
       const newKelasEntries: Kelas[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
-      updateAppData({ ...appData, kelas: [...appData.kelas, ...newKelasEntries] });
+      // Supabase insert can take an array for bulk inserts
+      const { error } = await supabase.from('kelas').insert(newKelasEntries);
+      if (error) throw error;
+      toast({ title: "Sukses!", description: `${names.length} kelas berhasil ditambahkan dari file.`, });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to add multiple kelas:", error);
+      toast({ title: "Error", description: "Gagal menambahkan beberapa kelas dari file.", variant: "destructive" });
     }
   };
 
   // Queue Management Handlers
-  const handleUpdateAntrianStatus = (id: string, status: AntrianStatus) => {
-    if (appData) {
-      const updatedAntrianList = appData.antrian.map(a =>
-        a.id === id ? { ...a, status } : a
-      );
-      updateAppData({ ...appData, antrian: updatedAntrianList });
+  const handleUpdateAntrianStatus = async (id: string, status: AntrianStatus) => {
+    if (!appData) return;
+    try {
+      const antrianToUpdate = appData.antrian.find(a => a.id === id);
+      if (antrianToUpdate) {
+        await updateAntrian({ ...antrianToUpdate, status });
+        toast({ title: "Sukses!", description: `Status antrian #${antrianToUpdate.nomorAntrian} diperbarui menjadi ${status}.` });
+        await fetchInitialData();
+      }
+    } catch (error) {
+      console.error("Failed to update antrian status:", error);
+      toast({ title: "Error", description: "Gagal memperbarui status antrian.", variant: "destructive" });
     }
   };
 
-  const handleDeleteAntrian = (id: string) => {
-    if (appData) {
-      const filteredAntrianList = appData.antrian.filter(a => a.id !== id);
-      updateAppData({ ...appData, antrian: filteredAntrianList });
+  const handleDeleteAntrian = async (id: string) => {
+    if (!appData) return;
+    try {
+      await deleteAntrian(id);
+      toast({ title: "Sukses!", description: "Antrian berhasil dihapus." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to delete antrian:", error);
+      toast({ title: "Error", description: "Gagal menghapus antrian.", variant: "destructive" });
     }
   };
 
-  const handleCallNextQueue = () => {
+  const handleCallNextQueue = async () => {
     if (!appData) return;
 
-    const currentAntrianList = [...appData.antrian];
-    let updatedAntrianList = [...currentAntrianList];
-    let toastMessage = "";
+    try {
+      const currentAntrianList = [...appData.antrian];
+      let toastMessage = "";
+      let updates: Antrian[] = [];
 
-    // 1. Find the currently "Diproses" queue and set it to "Selesai"
-    const processingQueueIndex = updatedAntrianList.findIndex(a => a.status === "Diproses");
-    if (processingQueueIndex !== -1) {
-      updatedAntrianList[processingQueueIndex] = {
-        ...updatedAntrianList[processingQueueIndex],
-        status: "Selesai",
-      };
-      toastMessage += `Antrian #${updatedAntrianList[processingQueueIndex].nomorAntrian} selesai. `;
-    }
+      // 1. Find the currently "Diproses" queue and set it to "Selesai"
+      const processingQueue = currentAntrianList.find(a => a.status === "Diproses");
+      if (processingQueue) {
+        updates.push({ ...processingQueue, status: "Selesai" });
+        toastMessage += `Antrian #${processingQueue.nomorAntrian} selesai. `;
+      }
 
-    // 2. Find the next "Menunggu" queue (lowest number)
-    const waitingQueues = updatedAntrianList
-      .filter(a => a.status === "Menunggu")
-      .sort((a, b) => a.nomorAntrian - b.nomorAntrian);
+      // 2. Find the next "Menunggu" queue (lowest number)
+      const waitingQueues = currentAntrianList
+        .filter(a => a.status === "Menunggu")
+        .sort((a, b) => a.nomorAntrian - b.nomorAntrian);
 
-    if (waitingQueues.length > 0) {
-      const nextQueueToProcess = waitingQueues[0];
-      const nextQueueIndex = updatedAntrianList.findIndex(a => a.id === nextQueueToProcess.id);
-
-      if (nextQueueIndex !== -1) {
-        updatedAntrianList[nextQueueIndex] = {
-          ...updatedAntrianList[nextQueueIndex],
-          status: "Diproses",
-        };
+      if (waitingQueues.length > 0) {
+        const nextQueueToProcess = waitingQueues[0];
+        updates.push({ ...nextQueueToProcess, status: "Diproses" });
         toastMessage += `Antrian #${nextQueueToProcess.nomorAntrian} dipanggil.`;
         toast({
           title: "Sukses!",
           description: toastMessage,
         });
+      } else {
+        toastMessage = "Tidak ada antrian menunggu lainnya.";
+        toast({
+          title: "Info",
+          description: toastMessage,
+          variant: "default",
+        });
       }
-    } else {
-      toastMessage = "Tidak ada antrian menunggu lainnya.";
+
+      // Perform all updates in a single transaction (or multiple awaited calls)
+      for (const antrian of updates) {
+        await updateAntrian(antrian);
+      }
+      await fetchInitialData(); // Re-fetch after all updates
+    } catch (error) {
+      console.error("Failed to call next queue:", error);
       toast({
-        title: "Info",
-        description: toastMessage,
-        variant: "default",
+        title: "Error",
+        description: "Gagal memanggil antrian berikutnya.",
+        variant: "destructive",
       });
     }
-
-    updateAppData({ ...appData, antrian: updatedAntrianList });
   };
-
 
   if (!appData) {
     return (
