@@ -1,0 +1,106 @@
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Antrian, AntrianStatus, Guru, Kelas } from "@/types/app";
+import { Trash2 } from "lucide-react";
+
+interface QueueManagementProps {
+  antrianList: Antrian[];
+  guruList: Guru[];
+  kelasList: Kelas[];
+  onUpdateAntrianStatus: (id: string, status: AntrianStatus) => void;
+  onDeleteAntrian: (id: string) => void;
+}
+
+const QueueManagement: React.FC<QueueManagementProps> = ({
+  antrianList,
+  guruList,
+  kelasList,
+  onUpdateAntrianStatus,
+  onDeleteAntrian,
+}) => {
+  const getGuruName = (guruId: string) => {
+    return guruList.find(g => g.id === guruId)?.nama || "N/A";
+  };
+
+  const getKelasName = (kelasId: string) => {
+    return kelasList.find(k => k.id === kelasId)?.nama || "N/A";
+  };
+
+  const getStatusColor = (status: AntrianStatus) => {
+    switch (status) {
+      case "Menunggu":
+        return "text-blue-600";
+      case "Diproses":
+        return "text-yellow-600";
+      case "Selesai":
+        return "text-green-600";
+      default:
+        return "";
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Manajemen Antrian</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>No. Antrian</TableHead>
+              <TableHead>Guru</TableHead>
+              <TableHead>Kelas</TableHead>
+              <TableHead>Jadwal</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Aksi</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {antrianList.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  Belum ada antrian.
+                </TableCell>
+              </TableRow>
+            ) : (
+              antrianList.map((antrian) => (
+                <TableRow key={antrian.id}>
+                  <TableCell className="font-medium">{antrian.nomorAntrian}</TableCell>
+                  <TableCell>{getGuruName(antrian.guruId)}</TableCell>
+                  <TableCell>{getKelasName(antrian.kelasId)}</TableCell>
+                  <TableCell>{antrian.tanggalCetak} {antrian.jamCetak}</TableCell>
+                  <TableCell>
+                    <Select
+                      value={antrian.status}
+                      onValueChange={(value: AntrianStatus) => onUpdateAntrianStatus(antrian.id, value)}
+                    >
+                      <SelectTrigger className={`w-[120px] ${getStatusColor(antrian.status)}`}>
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Menunggu">Menunggu</SelectItem>
+                        <SelectItem value="Diproses">Diproses</SelectItem>
+                        <SelectItem value="Selesai">Selesai</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => onDeleteAntrian(antrian.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default QueueManagement;
