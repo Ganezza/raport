@@ -1,72 +1,193 @@
 import { AppData, Guru, Kelas, Antrian, Setting } from "@/types/app";
+import { supabase } from "@/integrations/supabase/client";
 
-const LOCAL_STORAGE_KEY = "queueAppData";
+const SETTINGS_ID = "app_settings"; // Fixed ID for the single settings row
 
-export const getAppData = (): AppData => {
-  const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-  if (data) {
-    return JSON.parse(data);
+export const getAppData = async (): Promise<AppData> => {
+  let guru: Guru[] = [];
+  let kelas: Kelas[] = [];
+  let antrian: Antrian[] = [];
+  let setting: Setting | null = null;
+
+  // Fetch Guru
+  const { data: guruData, error: guruError } = await supabase.from('guru').select('*');
+  if (guruError) console.error("Error fetching guru:", guruError);
+  else guru = guruData || [];
+
+  // Fetch Kelas
+  const { data: kelasData, error: kelasError } = await supabase.from('kelas').select('*');
+  if (kelasError) console.error("Error fetching kelas:", kelasError);
+  else kelas = kelasData || [];
+
+  // Fetch Antrian
+  const { data: antrianData, error: antrianError } = await supabase.from('antrian').select('*').order('createdAt', { ascending: true });
+  if (antrianError) console.error("Error fetching antrian:", antrianError);
+  else antrian = antrianData || [];
+
+  // Fetch Settings
+  const { data: settingData, error: settingError } = await supabase.from('settings').select('*').eq('id', SETTINGS_ID).single();
+  if (settingError && settingError.code !== 'PGRST116') { // PGRST116 means no rows found
+    console.error("Error fetching settings:", settingError);
+  } else if (settingData) {
+    setting = settingData;
   }
-  return initializeAppData();
+
+  const appData: AppData = {
+    guru,
+    kelas,
+    antrian,
+    setting: setting || initializeDefaultSettings(), // Use default if not found
+  };
+
+  // If any core data is missing, initialize it
+  if (guru.length === 0 || kelas.length === 0 || !setting) {
+    return await initializeAppData();
+  }
+
+  return appData;
 };
 
-export const setAppData = (data: AppData) => {
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+export const setAppData = async (data: AppData) => {
+  // This function will now handle updates for individual parts of AppData
+  // It's better to have specific functions for updating guru, kelas, antrian, setting
+  // For now, we'll just log a warning as this function will be refactored away.
+  console.warn("setAppData is deprecated. Use specific update functions for guru, kelas, antrian, setting.");
 };
 
-const initializeAppData = (): AppData => {
-  const defaultGuru: Guru[] = [
-    { id: "g1", nama: "Budi Santoso" },
-    { id: "g2", nama: "Siti Aminah" },
-    { id: "g3", nama: "Joko Susilo" },
-  ];
+// Specific functions for updating data in Supabase
+export const addGuru = async (guru: Guru) => {
+  const { data, error } = await supabase.from('guru').insert(guru).select();
+  if (error) throw error;
+  return data[0];
+};
 
-  const defaultKelas: Kelas[] = [
-    { id: "k1", nama: "XII IPA 1" },
-    { id: "k2", nama: "XII IPA 2" },
-    { id: "k3", nama: "XII IPS 1" },
-  ];
+export const updateGuru = async (guru: Guru) => {
+  const { data, error } = await supabase.from('guru').update(guru).eq('id', guru.id).select();
+  if (error) throw error;
+  return data[0];
+};
 
+export const deleteGuru = async (id: string) => {
+  const { error } = await supabase.from('guru').delete().eq('id', id);
+  if (error) throw error;
+};
+
+export const addKelas = async (kelas: Kelas) => {
+  const { data, error } = await supabase.from('kelas').insert(kelas).select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const updateKelas = async (kelas: Kelas) => {
+  const { data, error } = await supabase.from('kelas').update(kelas).eq('id', kelas.id).select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const deleteKelas = async (id: string) => {
+  const { error } = await supabase.from('kelas').delete().eq('id', id);
+  if (error) throw error;
+};
+
+export const addAntrian = async (antrian: Antrian) => {
+  const { data, error } = await supabase.from('antrian').insert(antrian).select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const updateAntrian = async (antrian: Antrian) => {
+  const { data, error } = await supabase.from('antrian').update(antrian).eq('id', antrian.id).select();
+  if (error) throw error;
+  return data[0];
+};
+
+export const deleteAntrian = async (id: string) => {
+  const { error } = await supabase.from('antrian').delete().eq('id', id);
+  if (error) throw error;
+};
+
+export const updateSettings = async (settings: Setting) => {
+  const { data, error } = await supabase.from('settings').upsert({ ...settings, id: SETTINGS_ID }).select();
+  if (error) throw error;
+  return data[0];
+};
+
+const initializeDefaultSettings = (): Setting => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   const defaultDate = `${year}-${month}-${day}`;
 
-  const defaultSetting: Setting = {
+  return {
     tanggalCetakDefault: defaultDate,
     jamMulai: "08:00",
     jamAkhir: "16:00",
     intervalAntarAntrian: 10, // minutes
   };
+};
 
-  const initialData: AppData = {
-    guru: defaultGuru,
-    kelas: defaultKelas,
-    antrian: [],
-    setting: defaultSetting,
-  };
+export const initializeAppData = async (): Promise<AppData> => {
+  const defaultGuru: Guru[] = [
+    { id: generateUniqueId(), nama: "Budi Santoso" },
+    { id: generateUniqueId(), nama: "Siti Aminah" },
+    { id: generateUniqueId(), nama: "Joko Susilo" },
+  ];
 
-  setAppData(initialData);
-  return initialData;
+  const defaultKelas: Kelas[] = [
+    { id: generateUniqueId(), nama: "XII IPA 1" },
+    { id: generateUniqueId(), nama: "XII IPA 2" },
+    { id: generateUniqueId(), nama: "XII IPS 1" },
+  ];
+
+  const defaultSetting = initializeDefaultSettings();
+
+  // Insert default guru if table is empty
+  const { data: existingGuru } = await supabase.from('guru').select('id');
+  if (!existingGuru || existingGuru.length === 0) {
+    const { error } = await supabase.from('guru').insert(defaultGuru);
+    if (error) console.error("Error inserting default guru:", error);
+  }
+
+  // Insert default kelas if table is empty
+  const { data: existingKelas } = await supabase.from('kelas').select('id');
+  if (!existingKelas || existingKelas.length === 0) {
+    const { error } = await supabase.from('kelas').insert(defaultKelas);
+    if (error) console.error("Error inserting default kelas:", error);
+  }
+
+  // Insert default settings if table is empty
+  const { data: existingSettings } = await supabase.from('settings').select('id').eq('id', SETTINGS_ID);
+  if (!existingSettings || existingSettings.length === 0) {
+    const { error } = await supabase.from('settings').insert({ ...defaultSetting, id: SETTINGS_ID });
+    if (error) console.error("Error inserting default settings:", error);
+  }
+
+  // Re-fetch all data after initialization to ensure consistency
+  return getAppData();
 };
 
 export const generateUniqueId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substring(2);
 };
 
-export const getNextQueueNumber = (antrian: Antrian[]): number => {
-  if (antrian.length === 0) {
+export const getNextQueueNumber = async (): Promise<number> => {
+  const { data: antrian, error } = await supabase.from('antrian').select('nomorAntrian');
+  if (error) {
+    console.error("Error fetching antrian for next queue number:", error);
+    return 1; // Fallback
+  }
+  if (!antrian || antrian.length === 0) {
     return 1;
   }
   const maxNumber = Math.max(...antrian.map(a => a.nomorAntrian));
   return maxNumber + 1;
 };
 
-export const getNextAvailableSlot = (
-  existingAntrian: Antrian[],
+export const getNextAvailableSlot = async (
+  existingAntrian: Antrian[], // This will now be passed from the component's state
   setting: Setting
-): { tanggal: string; jam: string } | null => {
+): Promise<{ tanggal: string; jam: string } | null> => {
   const { tanggalCetakDefault, jamMulai, jamAkhir, intervalAntarAntrian } = setting;
 
   const parseTime = (timeStr: string) => {
