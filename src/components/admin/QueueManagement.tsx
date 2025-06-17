@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Antrian, AntrianStatus, Guru, Kelas } from "@/types/app";
-import { Trash2 } from "lucide-react";
+import { Trash2, PlayCircle } from "lucide-react"; // Import PlayCircle icon
 
 interface QueueManagementProps {
   antrianList: Antrian[];
@@ -12,6 +12,7 @@ interface QueueManagementProps {
   kelasList: Kelas[];
   onUpdateAntrianStatus: (id: string, status: AntrianStatus) => void;
   onDeleteAntrian: (id: string) => void;
+  onCallNextQueue: () => void; // New prop for calling the next queue
 }
 
 const QueueManagement: React.FC<QueueManagementProps> = ({
@@ -20,6 +21,7 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
   kelasList,
   onUpdateAntrianStatus,
   onDeleteAntrian,
+  onCallNextQueue, // Destructure new prop
 }) => {
   const getGuruName = (guruId: string) => {
     return guruList.find(g => g.id === guruId)?.nama || "N/A";
@@ -44,8 +46,11 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Manajemen Antrian</CardTitle>
+        <Button onClick={onCallNextQueue} className="flex items-center">
+          <PlayCircle className="mr-2 h-4 w-4" /> Panggil Antrian Berikutnya
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>

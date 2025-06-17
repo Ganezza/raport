@@ -7,9 +7,11 @@ import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import { useToast } from "@/components/ui/use-toast"; // Import useToast
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
+  const { toast } = useToast(); // Initialize useToast
 
   useEffect(() => {
     const data = getAppData();
@@ -98,6 +100,56 @@ const AdminPage = () => {
     }
   };
 
+  const handleCallNextQueue = () => {
+    if (!appData) return;
+
+    const currentAntrianList = [...appData.antrian];
+    let updatedAntrianList = [...currentAntrianList];
+    let toastMessage = "";
+
+    // 1. Find the currently "Diproses" queue and set it to "Selesai"
+    const processingQueueIndex = updatedAntrianList.findIndex(a => a.status === "Diproses");
+    if (processingQueueIndex !== -1) {
+      updatedAntrianList[processingQueueIndex] = {
+        ...updatedAntrianList[processingQueueIndex],
+        status: "Selesai",
+      };
+      toastMessage += `Antrian #${updatedAntrianList[processingQueueIndex].nomorAntrian} selesai. `;
+    }
+
+    // 2. Find the next "Menunggu" queue (lowest number)
+    const waitingQueues = updatedAntrianList
+      .filter(a => a.status === "Menunggu")
+      .sort((a, b) => a.nomorAntrian - b.nomorAntrian);
+
+    if (waitingQueues.length > 0) {
+      const nextQueueToProcess = waitingQueues[0];
+      const nextQueueIndex = updatedAntrianList.findIndex(a => a.id === nextQueueToProcess.id);
+
+      if (nextQueueIndex !== -1) {
+        updatedAntrianList[nextQueueIndex] = {
+          ...updatedAntrianList[nextQueueIndex],
+          status: "Diproses",
+        };
+        toastMessage += `Antrian #${nextQueueToProcess.nomorAntrian} dipanggil.`;
+        toast({
+          title: "Sukses!",
+          description: toastMessage,
+        });
+      }
+    } else {
+      toastMessage = "Tidak ada antrian menunggu lainnya.";
+      toast({
+        title: "Info",
+        description: toastMessage,
+        variant: "default",
+      });
+    }
+
+    updateAppData({ ...appData, antrian: updatedAntrianList });
+  };
+
+
   if (!appData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -125,6 +177,7 @@ const AdminPage = () => {
               kelasList={appData.kelas}
               onUpdateAntrianStatus={handleUpdateAntrianStatus}
               onDeleteAntrian={handleDeleteAntrian}
+              onCallNextQueue={handleCallNextQueue} // Pass the new handler
             />
           </TabsContent>
           <TabsContent value="guru" className="mt-6">
