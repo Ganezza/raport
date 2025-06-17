@@ -7,14 +7,15 @@ import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { useToast } from "@/components/ui/use-toast"; // Import useToast
+import { useToast } from "@/components/ui/use-toast";
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
-  const { toast } = useToast(); // Initialize useToast
+  const { toast } = useToast();
 
   useEffect(() => {
     const data = getAppData();
+    console.log("AdminPage: Data antrian yang dimuat:", data.antrian.length, data.antrian);
     setAppDataState(data);
   }, []);
 
@@ -177,7 +178,7 @@ const AdminPage = () => {
               kelasList={appData.kelas}
               onUpdateAntrianStatus={handleUpdateAntrianStatus}
               onDeleteAntrian={handleDeleteAntrian}
-              onCallNextQueue={handleCallNextQueue} // Pass the new handler
+              onCallNextQueue={handleCallNextQueue}
             />
           </TabsContent>
           <TabsContent value="guru" className="mt-6">
