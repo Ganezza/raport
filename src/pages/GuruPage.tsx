@@ -5,8 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { getAppData, setAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot } from "@/lib/data";
-import { Antrian, Guru, Kelas } from "@/types/app";
+import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian } from "@/lib/data";
+import { Antrian, Guru, Kelas, Setting } from "@/types/app";
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
 
@@ -15,7 +15,7 @@ const GuruPage = () => {
   const [guruList, setGuruList] = useState<Guru[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<Setting | null>(null); // Use Setting type
 
   const [selectedGuruId, setSelectedGuruId] = useState<string>("");
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
@@ -30,12 +30,26 @@ const GuruPage = () => {
   const [reprintSelectedGuruId, setReprintSelectedGuruId] = useState<string>("");
   const [foundActiveAntrian, setFoundActiveAntrian] = useState<Antrian | null>(null);
 
+  const fetchAppData = async () => {
+    try {
+      const appData = await getAppData();
+      setGuruList(appData.guru);
+      setKelasList(appData.kelas);
+      setAntrianList(appData.antrian);
+      setSettings(appData.setting);
+      console.log("GuruPage: Data antrian dimuat:", appData.antrian.length, appData.antrian);
+    } catch (error) {
+      console.error("Failed to fetch app data in GuruPage:", error);
+      toast({
+        title: "Error",
+        description: "Gagal memuat data aplikasi.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
-    const appData = getAppData();
-    setGuruList(appData.guru);
-    setKelasList(appData.kelas);
-    setAntrianList(appData.antrian);
-    setSettings(appData.setting);
+    fetchAppData();
   }, []);
 
   const isGuruAlreadyQueued = (guruId: string) => {
@@ -46,7 +60,7 @@ const GuruPage = () => {
     return antrianList.some(antrian => antrian.kelasId === kelasId && antrian.status !== "Selesai");
   };
 
-  const handleCetakAntrian = () => {
+  const handleCetakAntrian = async () => {
     if (!selectedGuruId || !selectedKelasId) {
       toast({
         title: "Error",
@@ -83,42 +97,57 @@ const GuruPage = () => {
       return;
     }
 
-    const appData = getAppData();
-    const nextQueueNum = getNextQueueNumber(appData.antrian);
-    const nextSlot = getNextAvailableSlot(appData.antrian, appData.setting);
-
-    if (!nextSlot) {
+    if (!settings) {
       toast({
         title: "Error",
-        description: "Tidak ada slot jadwal yang tersedia. Silakan hubungi admin.",
+        description: "Pengaturan aplikasi belum dimuat. Coba refresh halaman.",
         variant: "destructive",
       });
       return;
     }
 
-    const newAntrian: Antrian = {
-      id: generateUniqueId(),
-      nomorAntrian: nextQueueNum,
-      guruId: selectedGuruId,
-      kelasId: selectedKelasId,
-      tanggalCetak: nextSlot.tanggal,
-      jamCetak: nextSlot.jam,
-      status: "Menunggu",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      const nextQueueNum = await getNextQueueNumber();
+      const nextSlot = await getNextAvailableSlot(antrianList, settings); // Pass current antrianList and settings
 
-    appData.antrian.push(newAntrian);
-    setAppData(appData);
-    console.log("GuruPage: Data antrian setelah penambahan:", appData.antrian.length, appData.antrian);
-    setAntrianList(appData.antrian); // Update state to reflect new antrian
+      if (!nextSlot) {
+        toast({
+          title: "Error",
+          description: "Tidak ada slot jadwal yang tersedia. Silakan hubungi admin.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setGeneratedAntrian(newAntrian);
-    setShowNewQueueForm(true); // Ensure we are on the new queue form view after generation
+      const newAntrian: Antrian = {
+        id: generateUniqueId(),
+        nomorAntrian: nextQueueNum,
+        guruId: selectedGuruId,
+        kelasId: selectedKelasId,
+        tanggalCetak: nextSlot.tanggal,
+        jamCetak: nextSlot.jam,
+        status: "Menunggu",
+        createdAt: new Date().toISOString(),
+      };
 
-    toast({
-      title: "Sukses!",
-      description: `Nomor antrian Anda: ${newAntrian.nomorAntrian}.`,
-    });
+      const addedAntrian = await addAntrian(newAntrian); // Add to Supabase
+      await fetchAppData(); // Re-fetch all data to update state
+
+      setGeneratedAntrian(addedAntrian);
+      setShowNewQueueForm(true); // Ensure we are on the new queue form view after generation
+
+      toast({
+        title: "Sukses!",
+        description: `Nomor antrian Anda: ${addedAntrian.nomorAntrian}.`,
+      });
+    } catch (error) {
+      console.error("Failed to create new antrian:", error);
+      toast({
+        title: "Error",
+        description: "Gagal mencetak nomor antrian. Silakan coba lagi.",
+        variant: "destructive",
+      });
+    }
   };
 
   const printQueueCard = async (antrianToPrint: Antrian) => {
