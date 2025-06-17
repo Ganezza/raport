@@ -50,16 +50,13 @@ const Index = () => {
           <Link to="/guru">
             <Button className="w-full py-3 text-lg">Halaman Guru (Pengajuan Antrian)</Button>
           </Link>
-          <Link to="/admin">
-            <Button className="w-full py-3 text-lg" variant="secondary">Halaman Admin</Button>
-          </Link>
+          {/* Tombol Halaman Admin telah dihapus */}
           <Link to="/display">
             <Button className="w-full py-3 text-lg" variant="outline">Halaman Display Antrian (Mode TV)</Button>
           </Link>
         </div>
       </div>
       <MadeWithDyad />
-      {/* Tautan admin rahasia telah dihapus */}
     </div>
   );
 };
