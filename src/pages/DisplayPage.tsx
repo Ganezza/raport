@@ -3,26 +3,84 @@ import { getAppData } from "@/lib/data";
 import { Antrian, Guru, Kelas } from "@/types/app";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 
 const DisplayPage = () => {
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
   const [guruList, setGuruList] = useState<Guru[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
 
-  const fetchQueueData = () => {
-    const appData = getAppData();
-    setAntrianList(appData.antrian);
-    setGuruList(appData.guru);
-    setKelasList(appData.kelas);
+  const fetchInitialData = async () => {
+    try {
+      const appData = await getAppData();
+      setGuruList(appData.guru);
+      setKelasList(appData.kelas);
+      // Initial fetch for antrian, then rely on real-time updates
+      setAntrianList(appData.antrian);
+    } catch (error) {
+      console.error("Error fetching initial data for DisplayPage:", error);
+    }
   };
 
   useEffect(() => {
-    fetchQueueData(); // Initial fetch
+    fetchInitialData();
 
-    const intervalId = setInterval(fetchQueueData, 5000); // Refresh every 5 seconds
+    // Set up real-time subscription for 'antrian' table
+    const antrianSubscription = supabase
+      .channel('public:antrian')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'antrian' }, payload => {
+        console.log('Change received!', payload);
+        // Re-fetch all antrian data to ensure correct sorting and filtering
+        // This is simpler than trying to merge changes from payload
+        supabase.from('antrian').select('*').order('createdAt', { ascending: true })
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error fetching antrian after real-time update:", error);
+            } else {
+              setAntrianList(data || []);
+            }
+          });
+      })
+      .subscribe();
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, []);
+    // Set up real-time subscription for 'guru' table
+    const guruSubscription = supabase
+      .channel('public:guru')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guru' }, payload => {
+        console.log('Guru change received!', payload);
+        supabase.from('guru').select('*')
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error fetching guru after real-time update:", error);
+            } else {
+              setGuruList(data || []);
+            }
+          });
+      })
+      .subscribe();
+
+    // Set up real-time subscription for 'kelas' table
+    const kelasSubscription = supabase
+      .channel('public:kelas')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'kelas' }, payload => {
+        console.log('Kelas change received!', payload);
+        supabase.from('kelas').select('*')
+          .then(({ data, error }) => {
+            if (error) {
+              console.error("Error fetching kelas after real-time update:", error);
+            } else {
+              setKelasList(data || []);
+            }
+          });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(antrianSubscription);
+      supabase.removeChannel(guruSubscription);
+      supabase.removeChannel(kelasSubscription);
+    };
+  }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
   const getGuruName = (guruId: string) => {
     return guruList.find(g => g.id === guruId)?.nama || "N/A";
