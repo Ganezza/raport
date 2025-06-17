@@ -21,6 +21,12 @@ const Index = () => {
         </div>
       </div>
       <MadeWithDyad />
+      {/* Tombol rahasia ke halaman admin */}
+      <div className="mt-2">
+        <Link to="/admin" className="text-xs text-gray-400 hover:text-gray-600">
+          Admin Login
+        </Link>
+      </div>
     </div>
   );
 };
