@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Guru } from "@/types/app";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, Upload } from "lucide-react"; // Import Upload icon
 
 interface GuruManagementProps {
   guruList: Guru[];
@@ -26,6 +26,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentGuruName, setCurrentGuruName] = useState("");
   const [editingGuruId, setEditingGuruId] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for file upload
 
   const handleSaveGuru = () => {
     if (!currentGuruName.trim()) {
@@ -54,6 +55,48 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
     setEditingGuruId(guru.id);
     setCurrentGuruName(guru.nama);
     setIsDialogOpen(true);
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0]);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
+  const handleUploadGuru = () => {
+    if (!selectedFile) {
+      toast({ title: "Error", description: "Mohon pilih file terlebih dahulu.", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const names = content.split('\n').map(name => name.trim()).filter(name => name.length > 0);
+
+      if (names.length === 0) {
+        toast({ title: "Info", description: "File kosong atau tidak ada nama yang valid.", variant: "default" });
+        return;
+      }
+
+      names.forEach(name => {
+        onAddGuru(name);
+      });
+
+      toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
+      setSelectedFile(null); // Clear selected file
+      // Optionally clear the file input element
+      const fileInput = document.getElementById('guruFileInput') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    };
+
+    reader.onerror = () => {
+      toast({ title: "Error", description: "Gagal membaca file.", variant: "destructive" });
+    };
+
+    reader.readAsText(selectedFile);
   };
 
   return (
@@ -93,6 +136,25 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
         </Dialog>
       </CardHeader>
       <CardContent>
+        <div className="mb-4 p-4 border rounded-md bg-gray-50">
+          <h3 className="text-lg font-semibold mb-2">Unggah Guru dari File Teks (.txt)</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Unggah file teks dengan satu nama guru per baris.
+          </p>
+          <div className="flex items-center space-x-2">
+            <Input
+              id="guruFileInput"
+              type="file"
+              accept=".txt"
+              onChange={handleFileChange}
+              className="flex-1"
+            />
+            <Button onClick={handleUploadGuru} disabled={!selectedFile}>
+              <Upload className="mr-2 h-4 w-4" /> Unggah
+            </Button>
+          </div>
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow>
