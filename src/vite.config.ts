@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig(() => ({
-  base: "/raport/", // Mengubah ini agar selalu menggunakan base path repositori
+  base: "./", // Mengubah ini menjadi path relatif
   server: {
     host: "::",
     port: 8080,
