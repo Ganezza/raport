@@ -7,7 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import GuruPage from "./pages/GuruPage";
 import AdminPage from "./pages/AdminPage";
-import DisplayPage from "./pages/DisplayPage"; // Import the new DisplayPage
+import DisplayPage from "./pages/DisplayPage";
 
 const queryClient = new QueryClient();
 
@@ -16,12 +16,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename="/raport"> {/* Tambahkan basename di sini */}
+      <BrowserRouter basename={import.meta.env.BASE_URL}> {/* Menggunakan BASE_URL dari Vite */}
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/guru" element={<GuruPage />} />
           <Route path="/admin" element={<AdminPage />} />
-          <Route path="/display" element={<DisplayPage />} /> {/* Add the DisplayPage route */}
+          <Route path="/display" element={<DisplayPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
