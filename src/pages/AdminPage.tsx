@@ -20,7 +20,7 @@ import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@/integrations/supabase/auth.tsx"; // Diperbarui ke .tsx
+import { useSession } from "@/integrations/supabase/auth.tsx";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -48,6 +48,11 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (!loading && !session) {
+      toast({
+        title: "Akses Ditolak",
+        description: "Anda harus login untuk mengakses halaman admin.",
+        variant: "destructive",
+      });
       navigate('/login', { replace: true });
     } else if (session) {
       fetchInitialData();
@@ -279,6 +284,15 @@ const AdminPage = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading Admin Panel...
+      </div>
+    );
+  }
+
+  // Add this check to ensure appData is not null before rendering content that uses it
+  if (!appData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Memuat data aplikasi...
       </div>
     );
   }
