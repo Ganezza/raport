@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,8 +38,9 @@ const GuruPage = () => {
       setAntrianList(appData.antrian);
       setSettings(appData.setting);
       console.log("GuruPage: Data antrian dimuat:", appData.antrian.length, appData.antrian);
+      console.log("GuruPage: Pengaturan dimuat:", appData.setting);
     } catch (error) {
-      console.error("Failed to fetch app data in GuruPage:", error);
+      console.error("GuruPage: Gagal memuat data aplikasi:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data aplikasi.",
@@ -61,12 +62,18 @@ const GuruPage = () => {
   };
 
   const handleCetakAntrian = async () => {
+    console.log("handleCetakAntrian: Memulai proses cetak antrian.");
+    console.log("handleCetakAntrian: selectedGuruId:", selectedGuruId);
+    console.log("handleCetakAntrian: selectedKelasId:", selectedKelasId);
+    console.log("handleCetakAntrian: checkbox1:", checkbox1, "checkbox2:", checkbox2, "checkbox3:", checkbox3);
+
     if (!selectedGuruId || !selectedKelasId) {
       toast({
         title: "Error",
         description: "Mohon pilih Nama Guru dan Kelas.",
         variant: "destructive",
       });
+      console.error("handleCetakAntrian: Nama Guru atau Kelas belum dipilih.");
       return;
     }
 
@@ -76,6 +83,7 @@ const GuruPage = () => {
         description: "Mohon centang semua pernyataan sebelum mencetak nomor antrian.",
         variant: "destructive",
       });
+      console.error("handleCetakAntrian: Pernyataan belum dicentang semua.");
       return;
     }
 
@@ -85,6 +93,7 @@ const GuruPage = () => {
         description: "Guru ini sudah memiliki antrian yang aktif.",
         variant: "destructive",
       });
+      console.error("handleCetakAntrian: Guru sudah memiliki antrian aktif.");
       return;
     }
 
@@ -94,6 +103,7 @@ const GuruPage = () => {
         description: "Kelas ini sudah memiliki antrian yang aktif.",
         variant: "destructive",
       });
+      console.error("handleCetakAntrian: Kelas sudah memiliki antrian aktif.");
       return;
     }
 
@@ -103,11 +113,16 @@ const GuruPage = () => {
         description: "Pengaturan aplikasi belum dimuat. Coba refresh halaman.",
         variant: "destructive",
       });
+      console.error("handleCetakAntrian: Pengaturan aplikasi null.");
       return;
     }
+    console.log("handleCetakAntrian: Pengaturan yang digunakan:", settings);
 
     try {
       const nextQueueNum = await getNextQueueNumber();
+      console.log("handleCetakAntrian: Nomor antrian berikutnya:", nextQueueNum);
+
+      console.log("handleCetakAntrian: Mencari slot tersedia dengan antrianList:", antrianList.length, "dan settings:", settings);
       const nextSlot = await getNextAvailableSlot(antrianList, settings); // Pass current antrianList and settings
 
       if (!nextSlot) {
@@ -116,8 +131,10 @@ const GuruPage = () => {
           description: "Tidak ada slot jadwal yang tersedia. Silakan hubungi admin.",
           variant: "destructive",
         });
+        console.error("handleCetakAntrian: Tidak ada slot jadwal yang tersedia.");
         return;
       }
+      console.log("handleCetakAntrian: Slot tersedia berikutnya:", nextSlot);
 
       const newAntrian: Antrian = {
         id: generateUniqueId(),
@@ -129,8 +146,10 @@ const GuruPage = () => {
         status: "Menunggu",
         createdAt: new Date().toISOString(),
       };
+      console.log("handleCetakAntrian: Objek antrian baru:", newAntrian);
 
       const addedAntrian = await addAntrian(newAntrian); // Add to Supabase
+      console.log("handleCetakAntrian: Antrian berhasil ditambahkan ke Supabase:", addedAntrian);
       await fetchAppData(); // Re-fetch all data to update state
 
       setGeneratedAntrian(addedAntrian);
@@ -141,7 +160,7 @@ const GuruPage = () => {
         description: `Nomor antrian Anda: ${addedAntrian.nomorAntrian}.`,
       });
     } catch (error) {
-      console.error("Failed to create new antrian:", error);
+      console.error("handleCetakAntrian: Gagal membuat antrian baru:", error);
       toast({
         title: "Error",
         description: "Gagal mencetak nomor antrian. Silakan coba lagi.",
