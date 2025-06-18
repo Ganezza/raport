@@ -87,7 +87,10 @@ export const updateGuru = async (guru: Guru) => {
 
 export const deleteGuru = async (id: string) => {
   const { error } = await supabase.from('guru').delete().eq('id', id);
-  if (error) throw error;
+  if (error) {
+    console.error("deleteGuru: Error deleting guru:", error); // Added logging
+    throw error;
+  }
 };
 
 export const addKelas = async (kelas: Kelas) => {
@@ -104,7 +107,10 @@ export const updateKelas = async (kelas: Kelas) => {
 
 export const deleteKelas = async (id: string) => {
   const { error } = await supabase.from('kelas').delete().eq('id', id);
-  if (error) throw error;
+  if (error) {
+    console.error("deleteKelas: Error deleting kelas:", error); // Added logging
+    throw error;
+  }
 };
 
 export const addAntrian = async (antrian: Antrian) => {
