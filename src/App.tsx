@@ -8,8 +8,8 @@ import NotFound from "./pages/NotFound";
 import GuruPage from "./pages/GuruPage";
 import AdminPage from "./pages/AdminPage";
 import DisplayPage from "./pages/DisplayPage";
-import Login from "./pages/Login"; // Import Login page
-import { SessionContextProvider } from "./integrations/supabase/auth"; // Import SessionContextProvider
+import Login from "./pages/Login";
+import { SessionContextProvider } from "./integrations/supabase/auth.tsx"; // Diperbarui ke .tsx
 
 const queryClient = new QueryClient();
 
@@ -19,13 +19,13 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter basename={import.meta.env.BASE_URL}>
-        <SessionContextProvider> {/* Wrap routes with SessionContextProvider */}
+        <SessionContextProvider>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/guru" element={<GuruPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/display" element={<DisplayPage />} />
-            <Route path="/login" element={<Login />} /> {/* Add Login route */}
+            <Route path="/login" element={<Login />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

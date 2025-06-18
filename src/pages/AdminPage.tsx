@@ -20,14 +20,14 @@ import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useSession } from "@/integrations/supabase/auth"; // Import useSession
+import { useSession } from "@/integrations/supabase/auth.tsx"; // Diperbarui ke .tsx
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button"; // Import Button for logout
+import { Button } from "@/components/ui/button";
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
   const { toast } = useToast();
-  const { session, loading } = useSession(); // Get session and loading state
+  const { session, loading } = useSession();
   const navigate = useNavigate();
 
   const fetchInitialData = useCallback(async () => {
@@ -48,20 +48,12 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (!loading && !session) {
-      // If not loading and no session, redirect to login
-      toast({
-        title: "Akses Ditolak",
-        description: "Anda harus login untuk mengakses halaman admin.",
-        variant: "destructive",
-      });
       navigate('/login', { replace: true });
     } else if (session) {
-      // If session exists, fetch data
       fetchInitialData();
     }
   }, [session, loading, navigate, fetchInitialData, toast]);
 
-  // Settings Management Handlers
   const handleSettingsChange = (newSettings: Setting) => {
     if (appData) {
       setAppDataState(prev => prev ? { ...prev, setting: newSettings } : null);
@@ -76,7 +68,7 @@ const AdminPage = () => {
         title: "Sukses!",
         description: "Pengaturan jadwal berhasil disimpan.",
       });
-      await fetchInitialData(); // Re-fetch to ensure consistency
+      await fetchInitialData();
     } catch (error) {
       console.error("Failed to save settings:", error);
       toast({
@@ -87,7 +79,6 @@ const AdminPage = () => {
     }
   };
 
-  // Guru Management Handlers
   const handleAddGuru = async (nama: string) => {
     if (!appData) return;
     try {
@@ -139,7 +130,6 @@ const AdminPage = () => {
     }
   };
 
-  // Kelas Management Handlers
   const handleAddKelas = async (nama: string) => {
     if (!appData) return;
     try {
@@ -191,7 +181,6 @@ const AdminPage = () => {
     }
   };
 
-  // Queue Management Handlers
   const handleUpdateAntrianStatus = async (id: string, status: AntrianStatus) => {
     if (!appData) return;
     try {

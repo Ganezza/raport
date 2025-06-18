@@ -2,14 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "@/integrations/supabase/auth"; // Import useSession
+import { useSession } from "@/integrations/supabase/auth.tsx"; // Diperbarui ke .tsx
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [clickCount, setClickCount] = useState(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const { session, loading } = useSession(); // Get session and loading state
+  const { session, loading } = useSession();
 
   const handleSecretClick = () => {
     setClickCount(prevCount => prevCount + 1);
@@ -31,14 +31,12 @@ const Index = () => {
       setClickCount(0); // Reset immediately after successful trigger
       
       if (!loading && !session) {
-        // If not authenticated, redirect to login page
         toast({
           title: "Akses Admin",
           description: "Silakan login untuk mengakses halaman admin.",
         });
         navigate("/login");
       } else if (session) {
-        // If authenticated, redirect to admin page
         toast({
           title: "Akses Admin",
           description: "Mengalihkan ke halaman admin...",
