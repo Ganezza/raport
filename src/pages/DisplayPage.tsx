@@ -12,13 +12,15 @@ const DisplayPage = () => {
 
   const fetchInitialData = async () => {
     try {
+      console.log("DisplayPage: Memulai pengambilan data awal...");
       const appData = await getAppData();
       setGuruList(appData.guru);
       setKelasList(appData.kelas);
       // Initial fetch for antrian, then rely on real-time updates
       setAntrianList(appData.antrian);
+      console.log("DisplayPage: Data awal berhasil dimuat.");
     } catch (error) {
-      console.error("Error fetching initial data for DisplayPage:", error);
+      console.error("DisplayPage: Error fetching initial data:", error);
     }
   };
 
@@ -26,56 +28,66 @@ const DisplayPage = () => {
     fetchInitialData();
 
     // Set up real-time subscription for 'antrian' table
+    console.log("DisplayPage: Menyiapkan langganan real-time untuk 'antrian'...");
     const antrianSubscription = supabase
       .channel('public:antrian')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'antrian' }, payload => {
-        console.log('Change received!', payload);
+        console.log('DisplayPage: Perubahan antrian diterima!', payload);
         // Re-fetch all antrian data to ensure correct sorting and filtering
         // This is simpler than trying to merge changes from payload
         supabase.from('antrian').select('*').order('createdAt', { ascending: true })
           .then(({ data, error }) => {
             if (error) {
-              console.error("Error fetching antrian after real-time update:", error);
+              console.error("DisplayPage: Error fetching antrian setelah update real-time:", error);
             } else {
               setAntrianList(data || []);
+              console.log("DisplayPage: Antrian diperbarui dari real-time.");
             }
           });
       })
       .subscribe();
+    console.log("DisplayPage: Langganan 'antrian' diinisialisasi.");
 
     // Set up real-time subscription for 'guru' table
+    console.log("DisplayPage: Menyiapkan langganan real-time untuk 'guru'...");
     const guruSubscription = supabase
       .channel('public:guru')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'guru' }, payload => {
-        console.log('Guru change received!', payload);
+        console.log('DisplayPage: Perubahan guru diterima!', payload);
         supabase.from('guru').select('*')
           .then(({ data, error }) => {
             if (error) {
-              console.error("Error fetching guru after real-time update:", error);
+              console.error("DisplayPage: Error fetching guru setelah update real-time:", error);
             } else {
               setGuruList(data || []);
+              console.log("DisplayPage: Guru diperbarui dari real-time.");
             }
           });
       })
       .subscribe();
+    console.log("DisplayPage: Langganan 'guru' diinisialisasi.");
 
     // Set up real-time subscription for 'kelas' table
+    console.log("DisplayPage: Menyiapkan langganan real-time untuk 'kelas'...");
     const kelasSubscription = supabase
       .channel('public:kelas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'kelas' }, payload => {
-        console.log('Kelas change received!', payload);
+        console.log('DisplayPage: Perubahan kelas diterima!', payload);
         supabase.from('kelas').select('*')
           .then(({ data, error }) => {
             if (error) {
-              console.error("Error fetching kelas after real-time update:", error);
+              console.error("DisplayPage: Error fetching kelas setelah update real-time:", error);
             } else {
               setKelasList(data || []);
+              console.log("DisplayPage: Kelas diperbarui dari real-time.");
             }
           });
       })
       .subscribe();
+    console.log("DisplayPage: Langganan 'kelas' diinisialisasi.");
 
     return () => {
+      console.log("DisplayPage: Membersihkan langganan real-time.");
       supabase.removeChannel(antrianSubscription);
       supabase.removeChannel(guruSubscription);
       supabase.removeChannel(kelasSubscription);
