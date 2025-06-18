@@ -176,10 +176,16 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{kelas.nama}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => openDialogForEdit(kelas)}>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      console.log("KelasManagement: Tombol Edit diklik untuk kelas ID:", kelas.id);
+                      openDialogForEdit(kelas);
+                    }}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => onDeleteKelas(kelas.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      console.log("KelasManagement: Tombol Hapus diklik untuk kelas ID:", kelas.id);
+                      onDeleteKelas(kelas.id);
+                    }}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
