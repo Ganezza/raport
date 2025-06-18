@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from "@/integrations/supabase/auth"; // Import useSession
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [clickCount, setClickCount] = useState(0);
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { session, loading } = useSession(); // Get session and loading state
 
   const handleSecretClick = () => {
     setClickCount(prevCount => prevCount + 1);
@@ -27,13 +29,24 @@ const Index = () => {
         clearTimeout(clickTimeoutRef.current);
       }
       setClickCount(0); // Reset immediately after successful trigger
-      toast({
-        title: "Akses Admin",
-        description: "Mengalihkan ke halaman admin...",
-      });
-      navigate("/admin");
+      
+      if (!loading && !session) {
+        // If not authenticated, redirect to login page
+        toast({
+          title: "Akses Admin",
+          description: "Silakan login untuk mengakses halaman admin.",
+        });
+        navigate("/login");
+      } else if (session) {
+        // If authenticated, redirect to admin page
+        toast({
+          title: "Akses Admin",
+          description: "Mengalihkan ke halaman admin...",
+        });
+        navigate("/admin");
+      }
     }
-  }, [clickCount, navigate, toast]);
+  }, [clickCount, navigate, toast, session, loading]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
@@ -49,7 +62,6 @@ const Index = () => {
           <Link to="/guru">
             <Button className="w-full py-3 text-lg">Halaman Guru (Pengajuan Antrian)</Button>
           </Link>
-          {/* Tombol Halaman Admin telah dihapus */}
           <Link to="/display">
             <Button className="w-full py-3 text-lg" variant="outline">Cek Proses Antrian</Button>
           </Link>

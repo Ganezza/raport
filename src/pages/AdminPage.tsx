@@ -7,7 +7,6 @@ import {
   addKelas,
   updateKelas,
   deleteKelas,
-  addAntrian, // Although not directly used for adding in AdminPage, it's good to have
   updateAntrian,
   deleteAntrian,
   updateSettings,
@@ -20,11 +19,16 @@ import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/integrations/supabase/auth"; // Import useSession
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button"; // Import Button for logout
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
   const { toast } = useToast();
+  const { session, loading } = useSession(); // Get session and loading state
+  const navigate = useNavigate();
 
   const fetchInitialData = useCallback(async () => {
     console.log("AdminPage: Memulai pengambilan data awal...");
@@ -43,8 +47,19 @@ const AdminPage = () => {
   }, [toast]);
 
   useEffect(() => {
-    fetchInitialData();
-  }, [fetchInitialData]);
+    if (!loading && !session) {
+      // If not loading and no session, redirect to login
+      toast({
+        title: "Akses Ditolak",
+        description: "Anda harus login untuk mengakses halaman admin.",
+        variant: "destructive",
+      });
+      navigate('/login', { replace: true });
+    } else if (session) {
+      // If session exists, fetch data
+      fetchInitialData();
+    }
+  }, [session, loading, navigate, fetchInitialData, toast]);
 
   // Settings Management Handlers
   const handleSettingsChange = (newSettings: Setting) => {
@@ -114,7 +129,6 @@ const AdminPage = () => {
     if (!appData) return;
     try {
       const newGuruEntries: Guru[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
-      // Supabase insert can take an array for bulk inserts
       const { error } = await supabase.from('guru').insert(newGuruEntries);
       if (error) throw error;
       toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
@@ -167,7 +181,6 @@ const AdminPage = () => {
     if (!appData) return;
     try {
       const newKelasEntries: Kelas[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
-      // Supabase insert can take an array for bulk inserts
       const { error } = await supabase.from('kelas').insert(newKelasEntries);
       if (error) throw error;
       toast({ title: "Sukses!", description: `${names.length} kelas berhasil ditambahkan dari file.`, });
@@ -214,14 +227,12 @@ const AdminPage = () => {
       let toastMessage = "";
       let updates: Antrian[] = [];
 
-      // 1. Find the currently "Diproses" queue and set it to "Selesai"
       const processingQueue = currentAntrianList.find(a => a.status === "Diproses");
       if (processingQueue) {
         updates.push({ ...processingQueue, status: "Selesai" });
         toastMessage += `Antrian #${processingQueue.nomorAntrian} selesai. `;
       }
 
-      // 2. Find the next "Menunggu" queue (lowest number)
       const waitingQueues = currentAntrianList
         .filter(a => a.status === "Menunggu")
         .sort((a, b) => a.nomorAntrian - b.nomorAntrian);
@@ -243,11 +254,10 @@ const AdminPage = () => {
         });
       }
 
-      // Perform all updates in a single transaction (or multiple awaited calls)
       for (const antrian of updates) {
         await updateAntrian(antrian);
       }
-      await fetchInitialData(); // Re-fetch after all updates
+      await fetchInitialData();
     } catch (error) {
       console.error("Failed to call next queue:", error);
       toast({
@@ -258,8 +268,25 @@ const AdminPage = () => {
     }
   };
 
-  if (!appData) {
-    console.log("AdminPage: appData masih null, menampilkan loading...");
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error",
+        description: "Gagal logout. Silakan coba lagi.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logout Berhasil",
+        description: "Anda telah berhasil logout.",
+      });
+      navigate('/login', { replace: true });
+    }
+  };
+
+  if (loading || !session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading Admin Panel...
@@ -267,11 +294,13 @@ const AdminPage = () => {
     );
   }
 
-  console.log("AdminPage: appData sudah dimuat, menampilkan panel admin.");
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-center mb-8">Panel Admin</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Panel Admin</h1>
+          <Button variant="outline" onClick={handleLogout}>Logout</Button>
+        </div>
 
         <Tabs defaultValue="antrian" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
