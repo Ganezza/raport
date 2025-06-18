@@ -45,21 +45,22 @@ export const getAppData = async (): Promise<AppData> => {
     setting = settingData;
     console.log("getAppData: Pengaturan berhasil dimuat:", setting);
   } else {
-    console.log("getAppData: Pengaturan tidak ditemukan, akan diinisialisasi.");
+    console.log("getAppData: Pengaturan tidak ditemukan.");
+  }
+
+  // Only initialize default data if the main settings are missing.
+  // This prevents re-initializing guru/kelas if they are intentionally emptied by the user.
+  if (!setting) {
+    console.log("getAppData: Pengaturan utama tidak ditemukan, memulai inisialisasi data default...");
+    return await initializeAppData();
   }
 
   const appData: AppData = {
     guru,
     kelas,
     antrian,
-    setting: setting || initializeDefaultSettings(), // Use default if not found
+    setting: setting, // Use the fetched setting
   };
-
-  // If any core data is missing, initialize it
-  if (guru.length === 0 || kelas.length === 0 || !setting) {
-    console.log("getAppData: Data inti kosong atau pengaturan tidak ada, memulai inisialisasi...");
-    return await initializeAppData();
-  }
 
   console.log("getAppData: Semua data berhasil dikumpulkan.");
   return appData;
