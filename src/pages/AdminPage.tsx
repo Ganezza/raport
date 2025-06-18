@@ -20,18 +20,20 @@ import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client"; // Import supabase client
 
 const AdminPage = () => {
   const [appData, setAppDataState] = useState<AppData | null>(null);
   const { toast } = useToast();
 
   const fetchInitialData = useCallback(async () => {
+    console.log("AdminPage: Memulai pengambilan data awal...");
     try {
       const data = await getAppData();
-      console.log("AdminPage: Data antrian yang dimuat:", data.antrian.length, data.antrian);
+      console.log("AdminPage: Data awal berhasil dimuat:", data);
       setAppDataState(data);
     } catch (error) {
-      console.error("Failed to fetch initial app data:", error);
+      console.error("AdminPage: Gagal memuat data aplikasi awal:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data aplikasi dari database.",
@@ -257,6 +259,7 @@ const AdminPage = () => {
   };
 
   if (!appData) {
+    console.log("AdminPage: appData masih null, menampilkan loading...");
     return (
       <div className="min-h-screen flex items-center justify-center">
         Loading Admin Panel...
@@ -264,6 +267,7 @@ const AdminPage = () => {
     );
   }
 
+  console.log("AdminPage: appData sudah dimuat, menampilkan panel admin.");
   return (
     <div className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">

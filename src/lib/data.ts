@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 const SETTINGS_ID = "app_settings"; // Fixed ID for the single settings row
 
 export const getAppData = async (): Promise<AppData> => {
+  console.log("getAppData: Memulai pengambilan data dari Supabase...");
   let guru: Guru[] = [];
   let kelas: Kelas[] = [];
   let antrian: Antrian[] = [];
@@ -11,25 +12,40 @@ export const getAppData = async (): Promise<AppData> => {
 
   // Fetch Guru
   const { data: guruData, error: guruError } = await supabase.from('guru').select('*');
-  if (guruError) console.error("Error fetching guru:", guruError);
-  else guru = guruData || [];
+  if (guruError) {
+    console.error("getAppData: Error fetching guru:", guruError);
+  } else {
+    guru = guruData || [];
+    console.log("getAppData: Guru berhasil dimuat:", guru.length);
+  }
 
   // Fetch Kelas
   const { data: kelasData, error: kelasError } = await supabase.from('kelas').select('*');
-  if (kelasError) console.error("Error fetching kelas:", kelasError);
-  else kelas = kelasData || [];
+  if (kelasError) {
+    console.error("getAppData: Error fetching kelas:", kelasError);
+  } else {
+    kelas = kelasData || [];
+    console.log("getAppData: Kelas berhasil dimuat:", kelas.length);
+  }
 
   // Fetch Antrian
   const { data: antrianData, error: antrianError } = await supabase.from('antrian').select('*').order('createdAt', { ascending: true });
-  if (antrianError) console.error("Error fetching antrian:", antrianError);
-  else antrian = antrianData || [];
+  if (antrianError) {
+    console.error("getAppData: Error fetching antrian:", antrianError);
+  } else {
+    antrian = antrianData || [];
+    console.log("getAppData: Antrian berhasil dimuat:", antrian.length);
+  }
 
   // Fetch Settings
   const { data: settingData, error: settingError } = await supabase.from('settings').select('*').eq('id', SETTINGS_ID).single();
   if (settingError && settingError.code !== 'PGRST116') { // PGRST116 means no rows found
-    console.error("Error fetching settings:", settingError);
+    console.error("getAppData: Error fetching settings:", settingError);
   } else if (settingData) {
     setting = settingData;
+    console.log("getAppData: Pengaturan berhasil dimuat:", setting);
+  } else {
+    console.log("getAppData: Pengaturan tidak ditemukan, akan diinisialisasi.");
   }
 
   const appData: AppData = {
@@ -41,9 +57,11 @@ export const getAppData = async (): Promise<AppData> => {
 
   // If any core data is missing, initialize it
   if (guru.length === 0 || kelas.length === 0 || !setting) {
+    console.log("getAppData: Data inti kosong atau pengaturan tidak ada, memulai inisialisasi...");
     return await initializeAppData();
   }
 
+  console.log("getAppData: Semua data berhasil dikumpulkan.");
   return appData;
 };
 
@@ -128,6 +146,7 @@ const initializeDefaultSettings = (): Setting => {
 };
 
 export const initializeAppData = async (): Promise<AppData> => {
+  console.log("initializeAppData: Memulai inisialisasi data default...");
   const defaultGuru: Guru[] = [
     { id: generateUniqueId(), nama: "Budi Santoso" },
     { id: generateUniqueId(), nama: "Siti Aminah" },
@@ -142,29 +161,54 @@ export const initializeAppData = async (): Promise<AppData> => {
 
   const defaultSetting = initializeDefaultSettings();
 
+  let initializedGuru: Guru[] = [];
+  let initializedKelas: Kelas[] = [];
+  let initializedSetting: Setting | null = null;
+
   // Insert default guru if table is empty
   const { data: existingGuru } = await supabase.from('guru').select('id');
   if (!existingGuru || existingGuru.length === 0) {
-    const { error } = await supabase.from('guru').insert(defaultGuru);
-    if (error) console.error("Error inserting default guru:", error);
+    console.log("initializeAppData: Memasukkan guru default...");
+    const { data, error } = await supabase.from('guru').insert(defaultGuru).select();
+    if (error) console.error("initializeAppData: Error inserting default guru:", error);
+    else initializedGuru = data || [];
+  } else {
+    initializedGuru = (await supabase.from('guru').select('*')).data || [];
   }
 
   // Insert default kelas if table is empty
   const { data: existingKelas } = await supabase.from('kelas').select('id');
   if (!existingKelas || existingKelas.length === 0) {
-    const { error } = await supabase.from('kelas').insert(defaultKelas);
-    if (error) console.error("Error inserting default kelas:", error);
+    console.log("initializeAppData: Memasukkan kelas default...");
+    const { data, error } = await supabase.from('kelas').insert(defaultKelas).select();
+    if (error) console.error("initializeAppData: Error inserting default kelas:", error);
+    else initializedKelas = data || [];
+  } else {
+    initializedKelas = (await supabase.from('kelas').select('*')).data || [];
   }
 
   // Insert default settings if table is empty
   const { data: existingSettings } = await supabase.from('settings').select('id').eq('id', SETTINGS_ID);
   if (!existingSettings || existingSettings.length === 0) {
-    const { error } = await supabase.from('settings').insert({ ...defaultSetting, id: SETTINGS_ID });
-    if (error) console.error("Error inserting default settings:", error);
+    console.log("initializeAppData: Memasukkan pengaturan default...");
+    const { data, error } = await supabase.from('settings').insert({ ...defaultSetting, id: SETTINGS_ID }).select();
+    if (error) console.error("initializeAppData: Error inserting default settings:", error);
+    else initializedSetting = data ? data[0] : null;
+  } else {
+    initializedSetting = (await supabase.from('settings').select('*').eq('id', SETTINGS_ID).single()).data;
   }
 
-  // Re-fetch all data after initialization to ensure consistency
-  return getAppData();
+  // Return the newly initialized or existing data
+  const currentAntrian = (await supabase.from('antrian').select('*').order('createdAt', { ascending: true })).data || [];
+  
+  const finalAppData: AppData = {
+    guru: initializedGuru,
+    kelas: initializedKelas,
+    antrian: currentAntrian,
+    setting: initializedSetting || initializeDefaultSettings(),
+  };
+  console.log("initializeAppData: Inisialisasi selesai, mengembalikan data:", finalAppData);
+  return finalAppData;
 };
 
 export const generateUniqueId = (): string => {
