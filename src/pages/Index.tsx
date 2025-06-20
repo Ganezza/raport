@@ -48,14 +48,14 @@ const Index = () => {
   }, [clickCount, navigate, toast, session, loading]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <CardHeader className="text-center">
           <CardTitle
             className="text-3xl font-bold mb-4 text-gray-800 cursor-pointer select-none"
             onClick={handleSecretClick}
           >
-            Selamat Datang di Aplikasi Antrian Cetak Rapor
+            Selamat Datang di Aplikasi Antrian Rapor
           </CardTitle>
           <p className="text-lg text-gray-600 mb-8">Pilih peran Anda untuk melanjutkan:</p>
         </CardHeader>
