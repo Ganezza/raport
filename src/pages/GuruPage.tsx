@@ -70,10 +70,10 @@ const GuruPage = () => {
     if (!selectedGuruId || !selectedKelasId) {
       toast({
         title: "Error",
-        description: "Mohon pilih Nama Guru dan Kelas.",
+        description: "Mohon pilih Nama dan Kelas.",
         variant: "destructive",
       });
-      console.error("handleCetakAntrian: Nama Guru atau Kelas belum dipilih.");
+      console.error("handleCetakAntrian: Nama atau Kelas belum dipilih.");
       return;
     }
 
@@ -90,10 +90,10 @@ const GuruPage = () => {
     if (isGuruAlreadyQueued(selectedGuruId)) {
       toast({
         title: "Error",
-        description: "Guru ini sudah memiliki antrian yang aktif.",
+        description: "Nama ini sudah memiliki antrian yang aktif.",
         variant: "destructive",
       });
-      console.error("handleCetakAntrian: Guru sudah memiliki antrian aktif.");
+      console.error("handleCetakAntrian: Nama sudah memiliki antrian aktif.");
       return;
     }
 
@@ -202,7 +202,7 @@ const GuruPage = () => {
           <p style="font-size: 1.1em; margin-bottom: 5px; color: #555;">Nomor Antrian:</p>
           <h1 style="font-size: 3.5em; margin-bottom: 25px; color: #007bff; font-weight: bold;">${antrianToPrint.nomorAntrian}</h1>
           <img src="${qrCodeDataUrl}" style="display: block; margin: 0 auto 20px auto; width: 150px; height: 150px; border: 1px solid #eee;" />
-          <p style="margin-top: 10px; font-size: 1em; color: #333;">Nama Guru: <strong style="color: #007bff;">${guruList.find(g => g.id === antrianToPrint.guruId)?.nama}</strong></p>
+          <p style="margin-top: 10px; font-size: 1em; color: #333;">Nama: <strong style="color: #007bff;">${guruList.find(g => g.id === antrianToPrint.guruId)?.nama}</strong></p>
           <p style="font-size: 1em; color: #333;">Kelas: <strong style="color: #007bff;">${kelasList.find(k => k.id === antrianToPrint.kelasId)?.nama}</strong></p>
           <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Tanggal & Jam Cetak: ${antrianToPrint.tanggalCetak} Pukul ${antrianToPrint.jamCetak}</p>
           <p style="margin-top: 30px; font-size: 0.75em; color: #888;">Mohon datang tepat waktu.</p>
@@ -229,7 +229,7 @@ const GuruPage = () => {
     if (!reprintSelectedGuruId) {
       toast({
         title: "Error",
-        description: "Mohon pilih Nama Guru untuk mencari antrian.",
+        description: "Mohon pilih Nama untuk mencari antrian.",
         variant: "destructive",
       });
       setFoundActiveAntrian(null);
@@ -244,13 +244,13 @@ const GuruPage = () => {
       setFoundActiveAntrian(activeQueue);
       toast({
         title: "Antrian Ditemukan!",
-        description: `Antrian aktif untuk guru ini adalah #${activeQueue.nomorAntrian}.`,
+        description: `Antrian aktif untuk nama ini adalah #${activeQueue.nomorAntrian}.`,
       });
     } else {
       setFoundActiveAntrian(null);
       toast({
         title: "Info",
-        description: "Tidak ada antrian aktif ditemukan untuk guru ini.",
+        description: "Tidak ada antrian aktif ditemukan untuk nama ini.",
         variant: "default",
       });
     }
@@ -262,7 +262,7 @@ const GuruPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold mb-6">Pengajuan Antrian Cetak Rapor</CardTitle>
+          <CardTitle className="text-2xl font-bold mb-6">Pengajuan Antrian Rapor</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex space-x-4 mb-6">
@@ -300,10 +300,10 @@ const GuruPage = () => {
             !generatedAntrian ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="guru">Nama Guru</Label>
+                  <Label htmlFor="guru">Nama</Label>
                   <Select onValueChange={setSelectedGuruId} value={selectedGuruId}>
                     <SelectTrigger id="guru">
-                      <SelectValue placeholder="Pilih Guru" />
+                      <SelectValue placeholder="Masukkan Nama" />
                     </SelectTrigger>
                     <SelectContent>
                       {guruList.map((guru) => (
@@ -380,7 +380,7 @@ const GuruPage = () => {
                     includeMargin={false}
                   />
                 </div>
-                <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === generatedAntrian.guruId)?.nama}</span></p>
+                <p>Nama: <span className="font-medium">{guruList.find(g => g.id === generatedAntrian.guruId)?.nama}</span></p>
                 <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama}</span></p>
                 <p>Tanggal & Jam Cetak: <span className="font-medium">{generatedAntrian.tanggalCetak} Pukul {generatedAntrian.jamCetak}</span></p>
                 <Button className="w-full mt-6" onClick={() => printQueueCard(generatedAntrian)}>
@@ -394,10 +394,10 @@ const GuruPage = () => {
           ) : (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="reprintGuru">Cari Antrian Aktif Berdasarkan Nama Guru</Label>
+                <Label htmlFor="reprintGuru">Cari Antrian Aktif Berdasarkan Nama</Label>
                 <Select onValueChange={setReprintSelectedGuruId} value={reprintSelectedGuruId}>
                   <SelectTrigger id="reprintGuru">
-                    <SelectValue placeholder="Pilih Guru" />
+                    <SelectValue placeholder="Pilih Nama" />
                   </SelectTrigger>
                   <SelectContent>
                     {guruList.map((guru) => (
@@ -430,7 +430,7 @@ const GuruPage = () => {
                       includeMargin={false}
                     />
                   </div>
-                  <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama}</span></p>
+                  <p>Nama: <span className="font-medium">{guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama}</span></p>
                   <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama}</span></p>
                   <p>Tanggal & Jam Cetak: <span className="font-medium">{foundActiveAntrian.tanggalCetak} Pukul {foundActiveAntrian.jamCetak}</span></p>
                   <Button className="w-full mt-6" onClick={() => printQueueCard(foundActiveAntrian)}>
