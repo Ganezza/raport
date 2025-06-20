@@ -61,7 +61,7 @@ const Index = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col space-y-4 max-w-xs mx-auto">
-            <Link to="/guru">
+            <Link to="/user"> {/* Diperbarui dari /guru menjadi /user */}
               <Button className="w-full py-3 text-lg">Pengajuan Antrian</Button>
             </Link>
             <Link to="/display">
