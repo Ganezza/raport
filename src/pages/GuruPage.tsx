@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian, addGuru } from "@/lib/data";
 import { Antrian, Guru, Kelas, Setting } from "@/types/app";
@@ -20,9 +19,10 @@ const GuruPage = () => {
 
   const [inputGuruName, setInputGuruName] = useState<string>(""); // State for manual guru name input
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
-  const [checkbox1, setCheckbox1] = useState(false);
-  const [checkbox2, setCheckbox2] = useState(false);
-  const [checkbox3, setCheckbox3] = useState(false);
+  // Checkboxes removed as per request
+  // const [checkbox1, setCheckbox1] = useState(false);
+  // const [checkbox2, setCheckbox2] = useState(false);
+  // const [checkbox3, setCheckbox3] = useState(false);
 
   const [generatedAntrian, setGeneratedAntrian] = useState<Antrian | null>(null);
 
@@ -61,15 +61,17 @@ const GuruPage = () => {
     });
   };
 
-  const isKelasAlreadyQueued = (kelasId: string) => {
-    return antrianList.some(antrian => antrian.kelasId === kelasId && antrian.status !== "Selesai");
-  };
+  // isKelasAlreadyQueued check removed as per request
+  // const isKelasAlreadyQueued = (kelasId: string) => {
+  //   return antrianList.some(antrian => antrian.kelasId === kelasId && antrian.status !== "Selesai");
+  // };
 
   const handleCetakAntrian = async () => {
     console.log("handleCetakAntrian: Memulai proses cetak antrian.");
     console.log("handleCetakAntrian: inputGuruName:", inputGuruName);
     console.log("handleCetakAntrian: selectedKelasId:", selectedKelasId);
-    console.log("handleCetakAntrian: checkbox1:", checkbox1, "checkbox2:", checkbox2, "checkbox3:", checkbox3);
+    // Checkboxes removed from logs
+    // console.log("handleCetakAntrian: checkbox1:", checkbox1, "checkbox2:", checkbox2, "checkbox3:", checkbox3);
 
     const trimmedGuruName = inputGuruName.trim().toUpperCase();
 
@@ -93,15 +95,16 @@ const GuruPage = () => {
       return;
     }
 
-    if (!checkbox1 || !checkbox2 || !checkbox3) {
-      toast({
-        title: "Error",
-        description: "Mohon centang semua pernyataan sebelum mencetak nomor antrian.",
-        variant: "destructive",
-      });
-      console.error("handleCetakAntrian: Pernyataan belum dicentang semua.");
-      return;
-    }
+    // Checkboxes validation removed as per request
+    // if (!checkbox1 || !checkbox2 || !checkbox3) {
+    //   toast({
+    //     title: "Error",
+    //     description: "Mohon centang semua pernyataan sebelum mencetak nomor antrian.",
+    //     variant: "destructive",
+    //   });
+    //   console.error("handleCetakAntrian: Pernyataan belum dicentang semua.");
+    //   return;
+    // }
 
     if (isGuruAlreadyQueued(trimmedGuruName)) {
       toast({
@@ -113,15 +116,16 @@ const GuruPage = () => {
       return;
     }
 
-    if (isKelasAlreadyQueued(selectedKelasId)) {
-      toast({
-        title: "Error",
-        description: "Kelas ini sudah memiliki antrian yang aktif.",
-        variant: "destructive",
-      });
-      console.error("handleCetakAntrian: Kelas sudah memiliki antrian aktif.");
-      return;
-    }
+    // isKelasAlreadyQueued validation removed as per request
+    // if (isKelasAlreadyQueued(selectedKelasId)) {
+    //   toast({
+    //     title: "Error",
+    //     description: "Kelas ini sudah memiliki antrian yang aktif.",
+    //     variant: "destructive",
+    //   });
+    //   console.error("handleCetakAntrian: Kelas sudah memiliki antrian aktif.");
+    //   return;
+    // }
 
     if (!settings) {
       toast({
@@ -299,7 +303,8 @@ const GuruPage = () => {
     }
   };
 
-  const isCetakButtonEnabled = inputGuruName && selectedKelasId && checkbox1 && checkbox2 && checkbox3;
+  // isCetakButtonEnabled now only depends on inputGuruName and selectedKelasId
+  const isCetakButtonEnabled = inputGuruName.trim() !== "" && selectedKelasId !== "";
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -330,9 +335,10 @@ const GuruPage = () => {
                 setFoundActiveAntrian(null);
                 setInputGuruName(""); // Clear manual input
                 setSelectedKelasId("");
-                setCheckbox1(false);
-                setCheckbox2(false);
-                setCheckbox3(false);
+                // Checkboxes states cleared
+                // setCheckbox1(false);
+                // setCheckbox2(false);
+                // setCheckbox3(false);
               }}
             >
               Cetak Ulang Kartu Antrian
@@ -363,15 +369,18 @@ const GuruPage = () => {
                         <SelectItem
                           key={kelas.id}
                           value={kelas.id}
-                          disabled={isKelasAlreadyQueued(kelas.id)}
+                          // disabled={isKelasAlreadyQueued(kelas.id)} // Removed disabled prop
                         >
-                          {kelas.nama} {isKelasAlreadyQueued(kelas.id) && "(Sudah Digunakan)"}
+                          {kelas.nama}
+                          {/* {isKelasAlreadyQueued(kelas.id) && "(Sudah Digunakan)"} Removed text */}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
+                {/* Checkboxes removed as per request */}
+                {/*
                 <div className="space-y-2 mt-4">
                   <div className="flex items-center space-x-2">
                     <Checkbox id="checkbox1" checked={checkbox1} onCheckedChange={(checked) => setCheckbox1(!!checked)} />
@@ -386,6 +395,7 @@ const GuruPage = () => {
                     <Label htmlFor="checkbox3">Bertanggung jawab dalam proses cetak</Label>
                   </div>
                 </div>
+                */}
 
                 <Button
                   className="w-full mt-6"
