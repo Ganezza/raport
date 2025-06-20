@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian } from "@/lib/data";
+import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian, addGuru } from "@/lib/data";
 import { Antrian, Guru, Kelas, Setting } from "@/types/app";
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
@@ -18,7 +18,7 @@ const GuruPage = () => {
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
   const [settings, setSettings] = useState<Setting | null>(null);
 
-  const [selectedGuruId, setSelectedGuruId] = useState<string>("");
+  const [inputGuruName, setInputGuruName] = useState<string>(""); // State for manual guru name input
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
   const [checkbox1, setCheckbox1] = useState(false);
   const [checkbox2, setCheckbox2] = useState(false);
@@ -53,8 +53,12 @@ const GuruPage = () => {
     fetchAppData();
   }, []);
 
-  const isGuruAlreadyQueued = (guruId: string) => {
-    return antrianList.some(antrian => antrian.guruId === guruId && antrian.status !== "Selesai");
+  const isGuruAlreadyQueued = (guruName: string) => {
+    const trimmedGuruName = guruName.trim().toUpperCase();
+    return antrianList.some(antrian => {
+      const guru = guruList.find(g => g.id === antrian.guruId);
+      return guru && guru.nama.toUpperCase() === trimmedGuruName && antrian.status !== "Selesai";
+    });
   };
 
   const isKelasAlreadyQueued = (kelasId: string) => {
@@ -63,17 +67,29 @@ const GuruPage = () => {
 
   const handleCetakAntrian = async () => {
     console.log("handleCetakAntrian: Memulai proses cetak antrian.");
-    console.log("handleCetakAntrian: selectedGuruId:", selectedGuruId);
+    console.log("handleCetakAntrian: inputGuruName:", inputGuruName);
     console.log("handleCetakAntrian: selectedKelasId:", selectedKelasId);
     console.log("handleCetakAntrian: checkbox1:", checkbox1, "checkbox2:", checkbox2, "checkbox3:", checkbox3);
 
-    if (!selectedGuruId || !selectedKelasId) {
+    const trimmedGuruName = inputGuruName.trim().toUpperCase();
+
+    if (!trimmedGuruName) {
       toast({
         title: "Error",
-        description: "Mohon pilih Nama dan Kelas.",
+        description: "Mohon masukkan Nama Guru.",
         variant: "destructive",
       });
-      console.error("handleCetakAntrian: Nama atau Kelas belum dipilih.");
+      console.error("handleCetakAntrian: Nama Guru belum diisi.");
+      return;
+    }
+
+    if (!selectedKelasId) {
+      toast({
+        title: "Error",
+        description: "Mohon pilih Kelas.",
+        variant: "destructive",
+      });
+      console.error("handleCetakAntrian: Kelas belum dipilih.");
       return;
     }
 
@@ -87,7 +103,7 @@ const GuruPage = () => {
       return;
     }
 
-    if (isGuruAlreadyQueued(selectedGuruId)) {
+    if (isGuruAlreadyQueued(trimmedGuruName)) {
       toast({
         title: "Error",
         description: "Nama ini sudah memiliki antrian yang aktif.",
@@ -119,6 +135,32 @@ const GuruPage = () => {
     console.log("handleCetakAntrian: Pengaturan yang digunakan:", settings);
 
     try {
+      let finalGuruId: string;
+      const existingGuru = guruList.find(g => g.nama.toUpperCase() === trimmedGuruName);
+
+      if (existingGuru) {
+        finalGuruId = existingGuru.id;
+        console.log("handleCetakAntrian: Guru ditemukan:", existingGuru.nama, existingGuru.id);
+      } else {
+        // Add new guru if not found
+        console.log("handleCetakAntrian: Guru tidak ditemukan, menambahkan guru baru:", trimmedGuruName);
+        try {
+          const newGuru: Guru = { id: generateUniqueId(), nama: trimmedGuruName };
+          const addedGuru = await addGuru(newGuru); // This function returns the added guru
+          finalGuruId = addedGuru.id;
+          toast({ title: "Info", description: `Nama guru "${trimmedGuruName}" baru ditambahkan.` });
+          await fetchAppData(); // Re-fetch guru list to include the new guru
+        } catch (error) {
+          console.error("handleCetakAntrian: Gagal menambahkan guru baru:", error);
+          toast({
+            title: "Error",
+            description: "Gagal menambahkan guru baru. Silakan coba lagi.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
       const nextQueueNum = await getNextQueueNumber();
       console.log("handleCetakAntrian: Nomor antrian berikutnya:", nextQueueNum);
 
@@ -139,7 +181,7 @@ const GuruPage = () => {
       const newAntrian: Antrian = {
         id: generateUniqueId(),
         nomorAntrian: nextQueueNum,
-        guruId: selectedGuruId,
+        guruId: finalGuruId, // Use finalGuruId here
         kelasId: selectedKelasId,
         tanggalCetak: nextSlot.tanggal,
         jamCetak: nextSlot.jam,
@@ -154,6 +196,7 @@ const GuruPage = () => {
 
       setGeneratedAntrian(addedAntrian);
       setShowNewQueueForm(true); // Ensure we are on the new queue form view after generation
+      setInputGuruName(""); // Clear the input field
 
       toast({
         title: "Sukses!",
@@ -256,7 +299,7 @@ const GuruPage = () => {
     }
   };
 
-  const isCetakButtonEnabled = selectedGuruId && selectedKelasId && checkbox1 && checkbox2 && checkbox3;
+  const isCetakButtonEnabled = inputGuruName && selectedKelasId && checkbox1 && checkbox2 && checkbox3;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -285,7 +328,7 @@ const GuruPage = () => {
                 setShowNewQueueForm(false);
                 setGeneratedAntrian(null);
                 setFoundActiveAntrian(null);
-                setSelectedGuruId("");
+                setInputGuruName(""); // Clear manual input
                 setSelectedKelasId("");
                 setCheckbox1(false);
                 setCheckbox2(false);
@@ -300,23 +343,13 @@ const GuruPage = () => {
             !generatedAntrian ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="guru">Nama</Label>
-                  <Select onValueChange={setSelectedGuruId} value={selectedGuruId}>
-                    <SelectTrigger id="guru">
-                      <SelectValue placeholder="Masukkan Nama" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {guruList.map((guru) => (
-                        <SelectItem
-                          key={guru.id}
-                          value={guru.id}
-                          disabled={isGuruAlreadyQueued(guru.id)}
-                        >
-                          {guru.nama} {isGuruAlreadyQueued(guru.id) && "(Sudah Antri)"}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="guruName">Nama</Label>
+                  <Input
+                    id="guruName"
+                    value={inputGuruName}
+                    onChange={(e) => setInputGuruName(e.target.value)}
+                    placeholder="Masukkan Nama"
+                  />
                 </div>
 
                 <div>
