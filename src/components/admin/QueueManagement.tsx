@@ -66,16 +66,12 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
           </TableHeader>
           <TableBody>
             {antrianList.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center">
-                  Belum ada antrian.
-                </TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center">Belum ada antrian.</TableCell></TableRow>
             ) : (
               antrianList.map((antrian) => (
                 <TableRow key={antrian.id}>
                   <TableCell className="font-medium">{antrian.nomorAntrian}</TableCell>
-                  <TableCell>{getUserName(antrian.guruId)}</TableCell> {/* Changed to guruId */}
+                  <TableCell>{getUserName(antrian.guruId)}</TableCell>
                   <TableCell>{getKelasName(antrian.kelasId)}</TableCell>
                   <TableCell>{antrian.tanggalCetak} {antrian.jamCetak}</TableCell>
                   <TableCell>
