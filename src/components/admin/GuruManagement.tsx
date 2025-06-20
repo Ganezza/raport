@@ -7,14 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Guru } from "@/types/app";
-import { PlusCircle, Edit, Trash2, Upload } from "lucide-react"; // Import Upload icon
+import { PlusCircle, Edit, Trash2, Upload } from "lucide-react";
 
 interface GuruManagementProps {
   guruList: Guru[];
   onAddGuru: (nama: string) => void;
   onEditGuru: (id: string, nama: string) => void;
   onDeleteGuru: (id: string) => void;
-  onAddMultipleGuru: (names: string[]) => void; // New prop for bulk add
+  onAddMultipleGuru: (names: string[]) => void;
 }
 
 const GuruManagement: React.FC<GuruManagementProps> = ({
@@ -22,24 +22,25 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
   onAddGuru,
   onEditGuru,
   onDeleteGuru,
-  onAddMultipleGuru, // Destructure new prop
+  onAddMultipleGuru,
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentGuruName, setCurrentGuruName] = useState("");
   const [editingGuruId, setEditingGuruId] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for file upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleSaveGuru = () => {
-    if (!currentGuruName.trim()) {
+    const trimmedAndUppercasedName = currentGuruName.trim().toUpperCase(); // Convert to uppercase
+    if (!trimmedAndUppercasedName) {
       toast({ title: "Error", description: "Nama Guru tidak boleh kosong.", variant: "destructive" });
       return;
     }
     if (editingGuruId) {
-      onEditGuru(editingGuruId, currentGuruName.trim());
+      onEditGuru(editingGuruId, trimmedAndUppercasedName);
       toast({ title: "Sukses!", description: "Nama Guru berhasil diperbarui." });
     } else {
-      onAddGuru(currentGuruName.trim());
+      onAddGuru(trimmedAndUppercasedName);
       toast({ title: "Sukses!", description: "Guru berhasil ditambahkan." });
     }
     setCurrentGuruName("");
@@ -76,19 +77,18 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      const names = content.split('\n').map(name => name.trim()).filter(name => name.length > 0);
+      const names = content.split('\n').map(name => name.trim().toUpperCase()).filter(name => name.length > 0); // Convert to uppercase
 
       if (names.length === 0) {
         toast({ title: "Info", description: "File kosong atau tidak ada nama yang valid.", variant: "default" });
         return;
       }
 
-      console.log("GuruManagement: Names parsed from file:", names); // Log names parsed from file
-      onAddMultipleGuru(names); // Call the new bulk add handler
+      console.log("GuruManagement: Names parsed from file:", names);
+      onAddMultipleGuru(names);
 
       toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
-      setSelectedFile(null); // Clear selected file
-      // Optionally clear the file input element
+      setSelectedFile(null);
       const fileInput = document.getElementById('guruFileInput') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     };
@@ -125,7 +125,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
                 <Input
                   id="guruName"
                   value={currentGuruName}
-                  onChange={(e) => setCurrentGuruName(e.target.value)}
+                  onChange={(e) => setCurrentGuruName(e.target.value.toUpperCase())} {/* Convert to uppercase */}
                   className="col-span-3"
                 />
               </div>

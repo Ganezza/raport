@@ -7,14 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Kelas } from "@/types/app";
-import { PlusCircle, Edit, Trash2, Upload } from "lucide-react"; // Import Upload icon
+import { PlusCircle, Edit, Trash2, Upload } from "lucide-react";
 
 interface KelasManagementProps {
   kelasList: Kelas[];
   onAddKelas: (nama: string) => void;
   onEditKelas: (id: string, nama: string) => void;
   onDeleteKelas: (id: string) => void;
-  onAddMultipleKelas: (names: string[]) => void; // New prop for bulk add
+  onAddMultipleKelas: (names: string[]) => void;
 }
 
 const KelasManagement: React.FC<KelasManagementProps> = ({
@@ -22,24 +22,25 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
   onAddKelas,
   onEditKelas,
   onDeleteKelas,
-  onAddMultipleKelas, // Destructure new prop
+  onAddMultipleKelas,
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [currentKelasName, setCurrentKelasName] = useState("");
   const [editingKelasId, setEditingKelasId] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State for file upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleSaveKelas = () => {
-    if (!currentKelasName.trim()) {
+    const trimmedAndUppercasedName = currentKelasName.trim().toUpperCase(); // Convert to uppercase
+    if (!trimmedAndUppercasedName) {
       toast({ title: "Error", description: "Nama Kelas tidak boleh kosong.", variant: "destructive" });
       return;
     }
     if (editingKelasId) {
-      onEditKelas(editingKelasId, currentKelasName.trim());
+      onEditKelas(editingKelasId, trimmedAndUppercasedName);
       toast({ title: "Sukses!", description: "Nama Kelas berhasil diperbarui." });
     } else {
-      onAddKelas(currentKelasName.trim());
+      onAddKelas(trimmedAndUppercasedName);
       toast({ title: "Sukses!", description: "Kelas berhasil ditambahkan." });
     }
     setCurrentKelasName("");
@@ -76,18 +77,17 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      const names = content.split('\n').map(name => name.trim()).filter(name => name.length > 0);
+      const names = content.split('\n').map(name => name.trim().toUpperCase()).filter(name => name.length > 0); // Convert to uppercase
 
       if (names.length === 0) {
         toast({ title: "Info", description: "File kosong atau tidak ada nama yang valid.", variant: "default" });
         return;
       }
 
-      onAddMultipleKelas(names); // Call the new bulk add handler
+      onAddMultipleKelas(names);
 
       toast({ title: "Sukses!", description: `${names.length} kelas berhasil ditambahkan dari file.`, });
-      setSelectedFile(null); // Clear selected file
-      // Optionally clear the file input element
+      setSelectedFile(null);
       const fileInput = document.getElementById('kelasFileInput') as HTMLInputElement;
       if (fileInput) fileInput.value = '';
     };
@@ -124,7 +124,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
                 <Input
                   id="kelasName"
                   value={currentKelasName}
-                  onChange={(e) => setCurrentKelasName(e.target.value)}
+                  onChange={(e) => setCurrentKelasName(e.target.value.toUpperCase())} {/* Convert to uppercase */}
                   className="col-span-3"
                 />
               </div>
