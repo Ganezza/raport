@@ -164,7 +164,7 @@ const initializeDefaultSettings = (): Setting => {
   const defaultDate = `${year}-${month}-${day}`;
 
   return {
-    tanggalCetakDefault: defaultDate,
+    tanggalCetakDefault: defaultDate, // This will still be stored but not used for calculation in getNextAvailableSlot
     jamMulai: "08:00",
     jamAkhir: "16:00",
     intervalAntarAntrian: 10, // minutes
@@ -259,7 +259,7 @@ export const getNextAvailableSlot = async (
   existingAntrian: Antrian[],
   setting: Setting
 ): Promise<{ tanggal: string; jam: string } | null> => {
-  const { tanggalCetakDefault, jamMulai, jamAkhir, intervalAntarAntrian, workingDays } = setting;
+  const { jamMulai, jamAkhir, intervalAntarAntrian, workingDays } = setting;
 
   const parseTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -282,16 +282,8 @@ export const getNextAvailableSlot = async (
     return newDate;
   };
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize today to start of day
-
-  let currentSearchDate = new Date(tanggalCetakDefault);
-  currentSearchDate.setHours(0, 0, 0, 0); // Normalize to start of day
-
-  // Ensure we start searching from today or a future date if tanggalCetakDefault is in the past
-  if (currentSearchDate.getTime() < today.getTime()) {
-    currentSearchDate = today;
-  }
+  let currentSearchDate = new Date(); // Always start search from today
+  currentSearchDate.setHours(0, 0, 0, 0); // Normalize today to start of day
 
   const maxSearchDays = 365; // Prevent infinite loop, search up to a year ahead
   for (let i = 0; i < maxSearchDays; i++) {

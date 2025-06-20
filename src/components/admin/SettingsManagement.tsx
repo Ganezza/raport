@@ -39,10 +39,11 @@ const SettingsManagement: React.FC<SettingsManagementProps> = ({
   };
 
   const handleSaveClick = () => {
-    if (!settings.tanggalCetakDefault || !settings.jamMulai || !settings.jamAkhir || settings.intervalAntarAntrian <= 0) {
+    // Removed validation for tanggalCetakDefault as it's now automatic
+    if (!settings.jamMulai || !settings.jamAkhir || settings.intervalAntarAntrian <= 0) {
       toast({
         title: "Error",
-        description: "Semua pengaturan jadwal harus diisi dengan benar.",
+        description: "Jam Mulai, Jam Akhir, dan Interval Antar Antrian harus diisi dengan benar.",
         variant: "destructive",
       });
       return;
@@ -78,15 +79,7 @@ const SettingsManagement: React.FC<SettingsManagementProps> = ({
         <CardTitle>Manajemen Jadwal Cetak</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div>
-          <Label htmlFor="tanggalCetakDefault">Tanggal Cetak Default (YYYY-MM-DD)</Label>
-          <Input
-            id="tanggalCetakDefault"
-            type="date"
-            value={settings.tanggalCetakDefault}
-            onChange={handleInputChange}
-          />
-        </div>
+        {/* Tanggal Cetak Default dihapus karena akan otomatis */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="jamMulai">Jam Mulai (HH:MM)</Label>
