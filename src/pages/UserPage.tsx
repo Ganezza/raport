@@ -4,39 +4,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian, addUser } from "@/lib/data"; // Changed addGuru to addUser
-import { Antrian, User, Kelas, Setting } from "@/types/app"; // Changed Guru to User
+import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot, addAntrian, addUser } from "@/lib/data";
+import { Antrian, User, Kelas, Setting } from "@/types/app";
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const UserPage = () => { // Changed from GuruPage
+const UserPage = () => {
   const { toast } = useToast();
-  const [userList, setUserList] = useState<User[]>([]); // Changed from guruList to userList
+  const [userList, setUserList] = useState<User[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
   const [settings, setSettings] = useState<Setting | null>(null);
 
-  const [inputUserName, setInputUserName] = useState<string>(""); // Changed from inputGuruName
+  const [inputUserName, setInputUserName] = useState<string>("");
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
 
   const [generatedAntrian, setGeneratedAntrian] = useState<Antrian | null>(null);
 
   const [showNewQueueForm, setShowNewQueueForm] = useState(true);
-  const [reprintSelectedUserId, setReprintSelectedUserId] = useState<string>(""); // Changed from reprintSelectedGuruId
+  const [reprintSelectedUserId, setReprintSelectedUserId] = useState<string>("");
   const [foundActiveAntrian, setFoundActiveAntrian] = useState<Antrian | null>(null);
 
   const fetchAppData = async () => {
     try {
       const appData = await getAppData();
-      setUserList(appData.user); // Changed from setGuruList
+      setUserList(appData.user);
       setKelasList(appData.kelas);
       setAntrianList(appData.antrian);
       setSettings(appData.setting);
-      console.log("UserPage: Data antrian dimuat:", appData.antrian.length, appData.antrian); // Changed text
-      console.log("UserPage: Pengaturan dimuat:", appData.setting); // Changed text
+      console.log("UserPage: Data antrian dimuat:", appData.antrian.length, appData.antrian);
+      console.log("UserPage: Pengaturan dimuat:", appData.setting);
     } catch (error) {
-      console.error("UserPage: Gagal memuat data aplikasi:", error); // Changed text
+      console.error("UserPage: Gagal memuat data aplikasi:", error);
       toast({
         title: "Error",
         description: "Gagal memuat data aplikasi.",
@@ -49,28 +49,28 @@ const UserPage = () => { // Changed from GuruPage
     fetchAppData();
   }, []);
 
-  const isUserAlreadyQueued = (userName: string) => { // Changed from isGuruAlreadyQueued
-    const trimmedUserName = userName.trim().toUpperCase(); // Changed from trimmedGuruName
+  const isUserAlreadyQueued = (userName: string) => {
+    const trimmedUserName = userName.trim().toUpperCase();
     return antrianList.some(antrian => {
-      const user = userList.find(u => u.id === antrian.userId); // Changed from guru and guruId
+      const user = userList.find(u => u.id === antrian.guruId); // Changed to guruId
       return user && user.nama.toUpperCase() === trimmedUserName && antrian.status !== "Selesai";
     });
   };
 
   const handleCetakAntrian = async () => {
     console.log("handleCetakAntrian: Memulai proses cetak antrian.");
-    console.log("handleCetakAntrian: inputUserName:", inputUserName); // Changed from inputGuruName
+    console.log("handleCetakAntrian: inputUserName:", inputUserName);
     console.log("handleCetakAntrian: selectedKelasId:", selectedKelasId);
 
-    const trimmedUserName = inputUserName.trim().toUpperCase(); // Changed from trimmedGuruName
+    const trimmedUserName = inputUserName.trim().toUpperCase();
 
     if (!trimmedUserName) {
       toast({
         title: "Error",
-        description: "Mohon masukkan Nama User.", // Changed text
+        description: "Mohon masukkan Nama User.",
         variant: "destructive",
       });
-      console.error("handleCetakAntrian: Nama User belum diisi."); // Changed text
+      console.error("handleCetakAntrian: Nama User belum diisi.");
       return;
     }
 
@@ -84,7 +84,7 @@ const UserPage = () => { // Changed from GuruPage
       return;
     }
 
-    if (isUserAlreadyQueued(trimmedUserName)) { // Changed from isGuruAlreadyQueued
+    if (isUserAlreadyQueued(trimmedUserName)) {
       toast({
         title: "Error",
         description: "Nama ini sudah memiliki antrian yang aktif.",
@@ -106,26 +106,26 @@ const UserPage = () => { // Changed from GuruPage
     console.log("handleCetakAntrian: Pengaturan yang digunakan:", settings);
 
     try {
-      let finalUserId: string; // Changed from finalGuruId
-      const existingUser = userList.find(u => u.nama.toUpperCase() === trimmedUserName); // Changed from guruList and trimmedGuruName
+      let finalUserId: string;
+      const existingUser = userList.find(u => u.nama.toUpperCase() === trimmedUserName);
 
       if (existingUser) {
-        finalUserId = existingUser.id; // Changed from finalGuruId
-        console.log("handleCetakAntrian: User ditemukan:", existingUser.nama, existingUser.id); // Changed text
+        finalUserId = existingUser.id;
+        console.log("handleCetakAntrian: User ditemukan:", existingUser.nama, existingUser.id);
       } else {
         // Add new user if not found
-        console.log("handleCetakAntrian: User tidak ditemukan, menambahkan user baru:", trimmedUserName); // Changed text
+        console.log("handleCetakAntrian: User tidak ditemukan, menambahkan user baru:", trimmedUserName);
         try {
-          const newUser: User = { id: generateUniqueId(), nama: trimmedUserName }; // Changed Guru to User
-          const addedUser = await addUser(newUser); // Changed addGuru to addUser
-          finalUserId = addedUser.id; // Changed from finalGuruId
-          toast({ title: "Info", description: `Nama user "${trimmedUserName}" baru ditambahkan.` }); // Changed text
+          const newUser: User = { id: generateUniqueId(), nama: trimmedUserName };
+          const addedUser = await addUser(newUser);
+          finalUserId = addedUser.id;
+          toast({ title: "Info", description: `Nama user "${trimmedUserName}" baru ditambahkan.` });
           await fetchAppData(); // Re-fetch user list to include the new user
         } catch (error) {
-          console.error("handleCetakAntrian: Gagal menambahkan user baru:", error); // Changed text
+          console.error("handleCetakAntrian: Gagal menambahkan user baru:", error);
           toast({
             title: "Error",
-            description: "Gagal menambahkan user baru. Silakan coba lagi.", // Changed text
+            description: "Gagal menambahkan user baru. Silakan coba lagi.",
             variant: "destructive",
           });
           return;
@@ -152,7 +152,7 @@ const UserPage = () => { // Changed from GuruPage
       const newAntrian: Antrian = {
         id: generateUniqueId(),
         nomorAntrian: nextQueueNum,
-        userId: finalUserId, // Changed from guruId to userId
+        guruId: finalUserId, // Changed to guruId
         kelasId: selectedKelasId,
         tanggalCetak: nextSlot.tanggal,
         jamCetak: nextSlot.jam,
@@ -167,7 +167,7 @@ const UserPage = () => { // Changed from GuruPage
 
       setGeneratedAntrian(addedAntrian);
       setShowNewQueueForm(true); // Ensure we are on the new queue form view after generation
-      setInputUserName(""); // Clear the input field // Changed from setInputGuruName
+      setInputUserName(""); // Clear the input field
 
       toast({
         title: "Sukses!",
@@ -188,7 +188,7 @@ const UserPage = () => { // Changed from GuruPage
       const qrCodeValue = JSON.stringify({
         id: antrianToPrint.id,
         nomor: antrianToPrint.nomorAntrian,
-        user: userList.find(u => u.id === antrianToPrint.userId)?.nama, // Changed from guru and guruId
+        user: userList.find(u => u.id === antrianToPrint.guruId)?.nama, // Changed to guruId
         kelas: kelasList.find(k => k.id === antrianToPrint.kelasId)?.nama,
         jadwal: `${antrianToPrint.tanggalCetak} ${antrianToPrint.jamCetak}`
       });
@@ -216,7 +216,7 @@ const UserPage = () => { // Changed from GuruPage
           <p style="font-size: 1.1em; margin-bottom: 5px; color: #555;">Nomor Antrian:</p>
           <h1 style="font-size: 3.5em; margin-bottom: 25px; color: #007bff; font-weight: bold;">${antrianToPrint.nomorAntrian}</h1>
           <img src="${qrCodeDataUrl}" style="display: block; margin: 0 auto 20px auto; width: 150px; height: 150px; border: 1px solid #eee;" />
-          <p style="margin-top: 10px; font-size: 1em; color: #333;">Nama: <strong style="color: #007bff;">${userList.find(u => u.id === antrianToPrint.userId)?.nama}</strong></p> {/* Changed from guruList and guruId */}
+          <p style="margin-top: 10px; font-size: 1em; color: #333;">Nama: <strong style="color: #007bff;">${userList.find(u => u.id === antrianToPrint.guruId)?.nama}</strong></p> {/* Changed to guruId */}
           <p style="font-size: 1em; color: #333;">Kelas: <strong style="color: #007bff;">${kelasList.find(k => k.id === antrianToPrint.kelasId)?.nama}</strong></p>
           <p style="font-size: 0.9em; color: #666; margin-top: 10px;">Tanggal & Jam Cetak: ${antrianToPrint.tanggalCetak} Pukul ${antrianToPrint.jamCetak}</p>
           <p style="margin-top: 30px; font-size: 0.75em; color: #888;">Mohon datang tepat waktu.</p>
@@ -240,7 +240,7 @@ const UserPage = () => { // Changed from GuruPage
   };
 
   const handleSearchActiveQueue = () => {
-    if (!reprintSelectedUserId) { // Changed from reprintSelectedGuruId
+    if (!reprintSelectedUserId) {
       toast({
         title: "Error",
         description: "Mohon pilih Nama untuk mencari antrian.",
@@ -251,7 +251,7 @@ const UserPage = () => { // Changed from GuruPage
     }
 
     const activeQueue = antrianList.find(
-      (antrian) => antrian.userId === reprintSelectedUserId && antrian.status !== "Selesai" // Changed from guruId
+      (antrian) => antrian.guruId === reprintSelectedUserId && antrian.status !== "Selesai" // Changed to guruId
     );
 
     if (activeQueue) {
@@ -271,7 +271,7 @@ const UserPage = () => { // Changed from GuruPage
   };
 
   // isCetakButtonEnabled now only depends on inputUserName and selectedKelasId
-  const isCetakButtonEnabled = inputUserName.trim() !== "" && selectedKelasId !== ""; // Changed from inputGuruName
+  const isCetakButtonEnabled = inputUserName.trim() !== "" && selectedKelasId !== "";
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
@@ -288,7 +288,7 @@ const UserPage = () => { // Changed from GuruPage
                 setShowNewQueueForm(true);
                 setGeneratedAntrian(null);
                 setFoundActiveAntrian(null);
-                setReprintSelectedUserId(""); // Changed from setReprintSelectedGuruId
+                setReprintSelectedUserId("");
               }}
             >
               Cetak Antrian Baru
@@ -300,7 +300,7 @@ const UserPage = () => { // Changed from GuruPage
                 setShowNewQueueForm(false);
                 setGeneratedAntrian(null);
                 setFoundActiveAntrian(null);
-                setInputUserName(""); // Clear manual input // Changed from setInputGuruName
+                setInputUserName(""); // Clear manual input
                 setSelectedKelasId("");
               }}
             >
@@ -312,11 +312,11 @@ const UserPage = () => { // Changed from GuruPage
             !generatedAntrian ? (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="userName">Nama</Label> {/* Changed from guruName */}
+                  <Label htmlFor="userName">Nama</Label>
                   <Input
-                    id="userName" // Changed from guruName
-                    value={inputUserName} // Changed from inputGuruName
-                    onChange={(e) => setInputUserName(e.target.value)} // Changed from setInputGuruName
+                    id="userName"
+                    value={inputUserName}
+                    onChange={(e) => setInputUserName(e.target.value)}
                     placeholder="Masukkan Nama"
                   />
                 </div>
@@ -357,7 +357,7 @@ const UserPage = () => { // Changed from GuruPage
                     value={JSON.stringify({
                       id: generatedAntrian.id,
                       nomor: generatedAntrian.nomorAntrian,
-                      user: userList.find(u => u.id === generatedAntrian.userId)?.nama, // Changed from guru and guruId
+                      user: userList.find(u => u.id === generatedAntrian.guruId)?.nama, // Changed to guruId
                       kelas: kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama,
                       jadwal: `${generatedAntrian.tanggalCetak} ${generatedAntrian.jamCetak}`
                     })}
@@ -366,7 +366,7 @@ const UserPage = () => { // Changed from GuruPage
                     includeMargin={false}
                   />
                 </div>
-                <p>Nama: <span className="font-medium">{userList.find(u => u.id === generatedAntrian.userId)?.nama}</span></p> {/* Changed from guru and guruId */}
+                <p>Nama: <span className="font-medium">{userList.find(u => u.id === generatedAntrian.guruId)?.nama}</span></p> {/* Changed to guruId */}
                 <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama}</span></p>
                 <p>Tanggal & Jam Cetak: <span className="font-medium">{generatedAntrian.tanggalCetak} Pukul {generatedAntrian.jamCetak}</span></p>
                 <Button className="w-full mt-6" onClick={() => printQueueCard(generatedAntrian)}>
@@ -380,13 +380,13 @@ const UserPage = () => { // Changed from GuruPage
           ) : (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="reprintUser">Cari Antrian Aktif Berdasarkan Nama</Label> {/* Changed from reprintGuru */}
-                <Select onValueChange={setReprintSelectedUserId} value={reprintSelectedUserId}> {/* Changed from setReprintSelectedGuruId */}
-                  <SelectTrigger id="reprintUser"> {/* Changed from reprintGuru */}
+                <Label htmlFor="reprintUser">Cari Antrian Aktif Berdasarkan Nama</Label>
+                <Select onValueChange={setReprintSelectedUserId} value={reprintSelectedUserId}>
+                  <SelectTrigger id="reprintUser">
                     <SelectValue placeholder="Pilih Nama" />
                   </SelectTrigger>
                   <SelectContent>
-                    {userList.map((user) => ( // Changed from guru
+                    {userList.map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.nama}
                       </SelectItem>
@@ -407,7 +407,7 @@ const UserPage = () => { // Changed from GuruPage
                       value={JSON.stringify({
                         id: foundActiveAntrian.id,
                         nomor: foundActiveAntrian.nomorAntrian,
-                        user: userList.find(u => u.id === foundActiveAntrian.userId)?.nama, // Changed from guru and guruId
+                        user: userList.find(u => u.id === foundActiveAntrian.guruId)?.nama, // Changed to guruId
                         kelas: kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama,
                         jadwal: `${foundActiveAntrian.tanggalCetak} ${foundActiveAntrian.jamCetak}`
                       })}
@@ -416,7 +416,7 @@ const UserPage = () => { // Changed from GuruPage
                       includeMargin={false}
                     />
                   </div>
-                  <p>Nama: <span className="font-medium">{userList.find(u => u.id === foundActiveAntrian.userId)?.nama}</span></p> {/* Changed from guru and guruId */}
+                  <p>Nama: <span className="font-medium">{userList.find(u => u.id === foundActiveAntrian.guruId)?.nama}</span></p> {/* Changed to guruId */}
                   <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama}</span></p>
                   <p>Tanggal & Jam Cetak: <span className="font-medium">{foundActiveAntrian.tanggalCetak} Pukul {foundActiveAntrian.jamCetak}</span></p>
                   <Button className="w-full mt-6" onClick={() => printQueueCard(foundActiveAntrian)}>
@@ -432,4 +432,4 @@ const UserPage = () => { // Changed from GuruPage
   );
 };
 
-export default UserPage; // Changed from GuruPage
+export default UserPage;

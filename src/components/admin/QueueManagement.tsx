@@ -3,28 +3,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Antrian, AntrianStatus, User, Kelas } from "@/types/app"; // Changed Guru to User
-import { Trash2, PlayCircle } from "lucide-react"; // Import PlayCircle icon
+import { Antrian, AntrianStatus, User, Kelas } from "@/types/app";
+import { Trash2, PlayCircle } from "lucide-react";
 
 interface QueueManagementProps {
   antrianList: Antrian[];
-  userList: User[]; // Changed from guruList to userList
+  userList: User[];
   kelasList: Kelas[];
   onUpdateAntrianStatus: (id: string, status: AntrianStatus) => void;
   onDeleteAntrian: (id: string) => void;
-  onCallNextQueue: () => void; // New prop for calling the next queue
+  onCallNextQueue: () => void;
 }
 
 const QueueManagement: React.FC<QueueManagementProps> = ({
   antrianList,
-  userList, // Changed from guruList
+  userList,
   kelasList,
   onUpdateAntrianStatus,
   onDeleteAntrian,
-  onCallNextQueue, // Destructure new prop
+  onCallNextQueue,
 }) => {
-  const getUserName = (userId: string) => { // Changed from getGuruName
-    return userList.find(u => u.id === userId)?.nama || "N/A"; // Changed from g and guruId
+  const getUserName = (userId: string) => {
+    return userList.find(u => u.id === userId)?.nama || "N/A";
   };
 
   const getKelasName = (kelasId: string) => {
@@ -57,7 +57,7 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
           <TableHeader>
             <TableRow>
               <TableHead>No. Antrian</TableHead>
-              <TableHead>User</TableHead> {/* Changed from Guru */}
+              <TableHead>User</TableHead>
               <TableHead>Kelas</TableHead>
               <TableHead>Jadwal</TableHead>
               <TableHead>Status</TableHead>
@@ -75,7 +75,7 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
               antrianList.map((antrian) => (
                 <TableRow key={antrian.id}>
                   <TableCell className="font-medium">{antrian.nomorAntrian}</TableCell>
-                  <TableCell>{getUserName(antrian.userId)}</TableCell> {/* Changed from getGuruName(antrian.guruId) */}
+                  <TableCell>{getUserName(antrian.guruId)}</TableCell> {/* Changed to guruId */}
                   <TableCell>{getKelasName(antrian.kelasId)}</TableCell>
                   <TableCell>{antrian.tanggalCetak} {antrian.jamCetak}</TableCell>
                   <TableCell>
