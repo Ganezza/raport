@@ -26,6 +26,7 @@ export interface Setting {
   jamMulai: string; // HH:MM
   jamAkhir: string; // HH:MM
   intervalAntarAntrian: number; // minutes
+  workingDays: number[]; // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
 }
 
 export interface AppData {
