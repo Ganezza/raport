@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { getAppData } from "@/lib/data";
-import { Antrian, User, Kelas } from "@/types/app"; // Changed Guru to User
+import { Antrian, User, Kelas } from "@/types/app";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { supabase } from "@/integrations/supabase/client"; // Import supabase client
+import { supabase } from "@/integrations/supabase/client";
 
 const DisplayPage = () => {
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
-  const [userList, setUserList] = useState<User[]>([]); // Changed from guruList to userList
+  const [userList, setUserList] = useState<User[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
 
   const fetchInitialData = async () => {
     try {
       console.log("DisplayPage: Memulai pengambilan data awal...");
       const appData = await getAppData();
-      setUserList(appData.user); // Changed from setGuruList
+      setUserList(appData.user);
       setKelasList(appData.kelas);
       // Initial fetch for antrian, then rely on real-time updates
       setAntrianList(appData.antrian);
@@ -50,22 +50,22 @@ const DisplayPage = () => {
 
     // Set up real-time subscription for 'guru' table (now 'user' in app, but 'guru' in DB)
     console.log("DisplayPage: Menyiapkan langganan real-time untuk 'guru' (sekarang user)...");
-    const userSubscription = supabase // Changed from guruSubscription
+    const userSubscription = supabase
       .channel('public:guru') // Still 'guru' table in DB
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'guru' }, payload => { // Still 'guru' table in DB
-        console.log('DisplayPage: Perubahan user diterima!', payload); // Changed text
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guru' }, payload => {
+        console.log('DisplayPage: Perubahan user diterima!', payload);
         supabase.from('guru').select('*') // Still 'guru' table in DB
           .then(({ data, error }) => {
             if (error) {
-              console.error("DisplayPage: Error fetching user setelah update real-time:", error); // Changed text
+              console.error("DisplayPage: Error fetching user setelah update real-time:", error);
             } else {
-              setUserList(data || []); // Changed from setGuruList
-              console.log("DisplayPage: User diperbarui dari real-time."); // Changed text
+              setUserList(data || []);
+              console.log("DisplayPage: User diperbarui dari real-time.");
             }
           });
       })
       .subscribe();
-    console.log("DisplayPage: Langganan 'user' diinisialisasi."); // Changed text
+    console.log("DisplayPage: Langganan 'user' diinisialisasi.");
 
     // Set up real-time subscription for 'kelas' table
     console.log("DisplayPage: Menyiapkan langganan real-time untuk 'kelas'...");
@@ -89,13 +89,13 @@ const DisplayPage = () => {
     return () => {
       console.log("DisplayPage: Membersihkan langganan real-time.");
       supabase.removeChannel(antrianSubscription);
-      supabase.removeChannel(userSubscription); // Changed from guruSubscription
+      supabase.removeChannel(userSubscription);
       supabase.removeChannel(kelasSubscription);
     };
   }, []); // Empty dependency array means this effect runs once on mount and cleans up on unmount
 
-  const getUserName = (userId: string) => { // Changed from getGuruName
-    return userList.find(u => u.id === userId)?.nama || "N/A"; // Changed from g and guruId
+  const getUserName = (userId: string) => {
+    return userList.find(u => u.id === userId)?.nama || "N/A";
   };
 
   const getKelasName = (kelasId: string) => {
@@ -126,7 +126,7 @@ const DisplayPage = () => {
                   {processingQueues[0].nomorAntrian}
                 </p>
                 <p className="text-2xl sm:text-3xl mt-2 md:mt-4 text-gray-800">
-                  {getUserName(processingQueues[0].userId)} {/* Changed from getGuruName */}
+                  {getUserName(processingQueues[0].guruId)}
                 </p>
                 <p className="text-xl sm:text-2xl text-gray-700">
                   {getKelasName(processingQueues[0].kelasId)}
@@ -155,7 +155,7 @@ const DisplayPage = () => {
                   {waitingQueues[0].nomorAntrian}
                 </p>
                 <p className="text-2xl sm:text-3xl mt-2 md:mt-4 text-gray-800">
-                  {getUserName(waitingQueues[0].userId)} {/* Changed from getGuruName */}
+                  {getUserName(waitingQueues[0].guruId)}
                 </p>
                 <p className="text-xl sm:text-2xl text-gray-700">
                   {getKelasName(waitingQueues[0].kelasId)}
@@ -185,7 +185,7 @@ const DisplayPage = () => {
                 <div key={antrian.id} className="bg-gray-100 p-3 rounded-lg flex items-center justify-between">
                   <span className="text-2xl sm:text-3xl font-bold text-blue-600">{antrian.nomorAntrian}</span>
                   <div className="text-right">
-                    <p className="text-base sm:text-lg font-medium text-gray-800">{getUserName(antrian.userId)}</p> {/* Changed from getGuruName */}
+                    <p className="text-base sm:text-lg font-medium text-gray-800">{getUserName(antrian.guruId)}</p>
                     <p className="text-sm sm:text-base text-gray-700">{getKelasName(antrian.kelasId)}</p>
                     <p className="text-xs sm:text-sm text-gray-600">{antrian.jamCetak}</p>
                   </div>
