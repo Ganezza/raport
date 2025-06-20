@@ -62,7 +62,7 @@ const Index = () => {
         <CardContent>
           <div className="flex flex-col space-y-4 max-w-xs mx-auto">
             <Link to="/guru">
-              <Button className="w-full py-3 text-lg">Halaman Guru (Pengajuan Antrian)</Button>
+              <Button className="w-full py-3 text-lg">Pengajuan Antrian</Button>
             </Link>
             <Link to="/display">
               <Button className="w-full py-3 text-lg" variant="outline">Cek Proses Antrian</Button>
