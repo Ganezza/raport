@@ -1,22 +1,22 @@
-import { AppData, User, Kelas, Antrian, Setting } from "@/types/app"; // Changed Guru to User
+import { AppData, User, Kelas, Antrian, Setting } from "@/types/app";
 import { supabase } from "@/integrations/supabase/client";
 
 const SETTINGS_ID = "app_settings"; // Fixed ID for the single settings row
 
 export const getAppData = async (): Promise<AppData> => {
   console.log("getAppData: Memulai pengambilan data dari Supabase...");
-  let user: User[] = []; // Changed from guru to user
+  let user: User[] = [];
   let kelas: Kelas[] = [];
   let antrian: Antrian[] = [];
   let setting: Setting | null = null;
 
   // Fetch User (from 'guru' table in DB)
-  const { data: userData, error: userError } = await supabase.from('guru').select('*'); // Still 'guru' table in DB
+  const { data: userData, error: userError } = await supabase.from('guru').select('*');
   if (userError) {
-    console.error("getAppData: Error fetching user:", userError); // Changed text
+    console.error("getAppData: Error fetching user:", userError);
   } else {
-    user = userData || []; // Changed from guru to user
-    console.log("getAppData: User berhasil dimuat:", user.length); // Changed text
+    user = userData || [];
+    console.log("getAppData: User berhasil dimuat:", user.length);
   }
 
   // Fetch Kelas
@@ -56,7 +56,7 @@ export const getAppData = async (): Promise<AppData> => {
   }
 
   const appData: AppData = {
-    user, // Changed from guru
+    user,
     kelas,
     antrian,
     setting: setting, // Use the fetched setting
@@ -70,34 +70,34 @@ export const setAppData = async (data: AppData) => {
   // This function will now handle updates for individual parts of AppData
   // It's better to have specific functions for updating user, kelas, antrian, setting
   // For now, we'll just log a warning as this function will be refactored away.
-  console.warn("setAppData is deprecated. Use specific update functions for user, kelas, antrian, setting."); // Changed text
+  console.warn("setAppData is deprecated. Use specific update functions for user, kelas, antrian, setting.");
 };
 
 // Specific functions for updating data in Supabase
-export const addUser = async (user: User) => { // Changed from addGuru
-  const { data, error } = await supabase.from('guru').insert(user).select(); // Still 'guru' table in DB
+export const addUser = async (user: User) => {
+  const { data, error } = await supabase.from('guru').insert(user).select();
   if (error) throw error;
   return data[0];
 };
 
-export const updateUser = async (user: User) => { // Changed from updateGuru
-  const { data, error } = await supabase.from('guru').update(user).eq('id', user.id).select(); // Still 'guru' table in DB
+export const updateUser = async (user: User) => {
+  const { data, error } = await supabase.from('guru').update(user).eq('id', user.id).select();
   if (error) throw error;
   return data[0];
 };
 
-export const deleteUser = async (id: string) => { // Changed from deleteGuru
-  const { error } = await supabase.from('guru').delete().eq('id', id); // Still 'guru' table in DB
+export const deleteUser = async (id: string) => {
+  const { error } = await supabase.from('guru').delete().eq('id', id);
   if (error) {
-    console.error("deleteUser: Error deleting user:", error); // Added logging, changed text
+    console.error("deleteUser: Error deleting user:", error);
     throw error;
   }
 };
 
-export const deleteAllUser = async () => { // Changed from deleteAllGuru
-  const { error } = await supabase.from('guru').delete().neq('id', '0'); // Still 'guru' table in DB
+export const deleteAllUser = async () => {
+  const { error } = await supabase.from('guru').delete().neq('id', '0');
   if (error) {
-    console.error("deleteAllUser: Error deleting all users:", error); // Changed text
+    console.error("deleteAllUser: Error deleting all users:", error);
     throw error;
   }
 };
@@ -117,7 +117,7 @@ export const updateKelas = async (kelas: Kelas) => {
 export const deleteKelas = async (id: string) => {
   const { error } = await supabase.from('kelas').delete().eq('id', id);
   if (error) {
-    console.error("deleteKelas: Error deleting kelas:", error); // Added logging
+    console.error("deleteKelas: Error deleting kelas:", error);
     throw error;
   }
 };
@@ -165,12 +165,13 @@ const initializeDefaultSettings = (): Setting => {
     jamMulai: "08:00",
     jamAkhir: "16:00",
     intervalAntarAntrian: 10, // minutes
+    workingDays: [1, 2, 3, 4, 5], // Default to Monday-Friday
   };
 };
 
 export const initializeAppData = async (): Promise<AppData> => {
   console.log("initializeAppData: Memulai inisialisasi data default...");
-  const defaultUser: User[] = [ // Changed from defaultGuru: Guru[]
+  const defaultUser: User[] = [
     { id: generateUniqueId(), nama: "Budi Santoso" },
     { id: generateUniqueId(), nama: "Siti Aminah" },
     { id: generateUniqueId(), nama: "Joko Susilo" },
@@ -184,19 +185,19 @@ export const initializeAppData = async (): Promise<AppData> => {
 
   const defaultSetting = initializeDefaultSettings();
 
-  let initializedUser: User[] = []; // Changed from initializedGuru: Guru[]
+  let initializedUser: User[] = [];
   let initializedKelas: Kelas[] = [];
   let initializedSetting: Setting | null = null;
 
   // Insert default user if table is empty (still 'guru' table in DB)
-  const { data: existingUser } = await supabase.from('guru').select('id'); // Still 'guru' table in DB
+  const { data: existingUser } = await supabase.from('guru').select('id');
   if (!existingUser || existingUser.length === 0) {
-    console.log("initializeAppData: Memasukkan user default..."); // Changed text
-    const { data, error } = await supabase.from('guru').insert(defaultUser).select(); // Still 'guru' table in DB
-    if (error) console.error("initializeAppData: Error inserting default user:", error); // Changed text
-    else initializedUser = data || []; // Changed from initializedGuru
+    console.log("initializeAppData: Memasukkan user default...");
+    const { data, error } = await supabase.from('guru').insert(defaultUser).select();
+    if (error) console.error("initializeAppData: Error inserting default user:", error);
+    else initializedUser = data || [];
   } else {
-    initializedUser = (await supabase.from('guru').select('*')).data || []; // Changed from initializedGuru
+    initializedUser = (await supabase.from('guru').select('*')).data || [];
   }
 
   // Insert default kelas if table is empty
@@ -225,7 +226,7 @@ export const initializeAppData = async (): Promise<AppData> => {
   const currentAntrian = (await supabase.from('antrian').select('*').order('createdAt', { ascending: true })).data || [];
   
   const finalAppData: AppData = {
-    user: initializedUser, // Changed from guru
+    user: initializedUser,
     kelas: initializedKelas,
     antrian: currentAntrian,
     setting: initializedSetting || initializeDefaultSettings(),
@@ -252,10 +253,10 @@ export const getNextQueueNumber = async (): Promise<number> => {
 };
 
 export const getNextAvailableSlot = async (
-  existingAntrian: Antrian[], // This will now be passed from the component's state
+  existingAntrian: Antrian[],
   setting: Setting
 ): Promise<{ tanggal: string; jam: string } | null> => {
-  const { tanggalCetakDefault, jamMulai, jamAkhir, intervalAntarAntrian } = setting;
+  const { tanggalCetakDefault, jamMulai, jamAkhir, intervalAntarAntrian, workingDays } = setting;
 
   const parseTime = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -268,22 +269,67 @@ export const getNextAvailableSlot = async (
     return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
   };
 
-  const startMinutes = parseTime(jamMulai);
-  const endMinutes = parseTime(jamAkhir);
+  const isWorkingDay = (date: Date, days: number[]) => {
+    return days.includes(date.getDay()); // getDay() returns 0 for Sunday, 1 for Monday, etc.
+  };
 
-  const slots: { [key: string]: boolean } = {}; // "YYYY-MM-DD HH:MM" -> true if taken
+  const addDays = (date: Date, days: number) => {
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+  };
 
-  existingAntrian.forEach(a => {
-    slots[`${a.tanggalCetak} ${a.jamCetak}`] = true;
-  });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize today to start of day
 
-  for (let currentMinutes = startMinutes; currentMinutes < endMinutes; currentMinutes += intervalAntarAntrian) {
-    const potentialTime = formatTime(currentMinutes);
-    const slotKey = `${tanggalCetakDefault} ${potentialTime}`;
-    if (!slots[slotKey]) {
-      return { tanggal: tanggalCetakDefault, jam: potentialTime };
-    }
+  let currentSearchDate = new Date(tanggalCetakDefault);
+  currentSearchDate.setHours(0, 0, 0, 0); // Normalize to start of day
+
+  // Ensure we start searching from today or a future date if tanggalCetakDefault is in the past
+  if (currentSearchDate.getTime() < today.getTime()) {
+    currentSearchDate = today;
   }
 
-  return null; // No available slots
+  const maxSearchDays = 365; // Prevent infinite loop, search up to a year ahead
+  for (let i = 0; i < maxSearchDays; i++) {
+    if (isWorkingDay(currentSearchDate, workingDays)) {
+      const startMinutesForDay = parseTime(jamMulai);
+      const endMinutesForDay = parseTime(jamAkhir);
+
+      let currentSlotMinutes = startMinutesForDay;
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const currentTimeInMinutes = currentHour * 60 + currentMinute;
+
+      const isCurrentSearchDateToday = currentSearchDate.toDateString() === new Date().toDateString();
+
+      // If it's today, start searching from the current time + interval, or jamMulai if current time is before jamMulai
+      if (isCurrentSearchDateToday) {
+        currentSlotMinutes = Math.max(startMinutesForDay, currentTimeInMinutes + intervalAntarAntrian);
+      }
+
+      for (let j = currentSlotMinutes; j < endMinutesForDay; j += intervalAntarAntrian) {
+        const potentialTime = formatTime(j);
+        const formattedDate = currentSearchDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const slotKey = `${formattedDate} ${potentialTime}`;
+
+        // Check if this slot is already taken by an existing antrian
+        const isSlotTaken = existingAntrian.some(a => 
+          a.tanggalCetak === formattedDate && 
+          a.jamCetak === potentialTime &&
+          a.status !== "Selesai" // Only consider active queues
+        );
+
+        if (!isSlotTaken) {
+          return { tanggal: formattedDate, jam: potentialTime };
+        }
+      }
+    }
+    // Move to the next day
+    currentSearchDate = addDays(currentSearchDate, 1);
+  }
+
+  return null; // No available slots found within the search limit
 };
