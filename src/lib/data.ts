@@ -94,6 +94,14 @@ export const deleteGuru = async (id: string) => {
   }
 };
 
+export const deleteAllGuru = async () => {
+  const { error } = await supabase.from('guru').delete().neq('id', '0'); // Delete all where id is not '0' (effectively all rows)
+  if (error) {
+    console.error("deleteAllGuru: Error deleting all gurus:", error);
+    throw error;
+  }
+};
+
 export const addKelas = async (kelas: Kelas) => {
   const { data, error } = await supabase.from('kelas').insert(kelas).select();
   if (error) throw error;
