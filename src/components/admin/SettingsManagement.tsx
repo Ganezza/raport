@@ -29,17 +29,21 @@ const SettingsManagement: React.FC<SettingsManagementProps> = ({
   };
 
   const handleWorkingDayChange = (dayIndex: number, checked: boolean) => {
+    console.log(`SettingsManagement: Checkbox for day ${dayIndex} (${checked ? 'checked' : 'unchecked'})`);
     const newWorkingDays = checked
       ? [...settings.workingDays, dayIndex].sort((a, b) => a - b)
       : settings.workingDays.filter((day) => day !== dayIndex);
+    
+    console.log("SettingsManagement: New working days array calculated:", newWorkingDays);
     onSettingsChange({
       ...settings,
       workingDays: newWorkingDays,
     });
+    console.log("SettingsManagement: onSettingsChange called with new settings:", { ...settings, workingDays: newWorkingDays });
   };
 
   const handleSaveClick = () => {
-    // Removed validation for tanggalCetakDefault as it's now automatic
+    console.log("SettingsManagement: Save button clicked. Current settings before save:", settings);
     if (!settings.jamMulai || !settings.jamAkhir || settings.intervalAntarAntrian <= 0) {
       toast({
         title: "Error",
@@ -79,7 +83,6 @@ const SettingsManagement: React.FC<SettingsManagementProps> = ({
         <CardTitle>Manajemen Jadwal Cetak</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Tanggal Cetak Default dihapus karena akan otomatis */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="jamMulai">Jam Mulai (HH:MM)</Label>
@@ -118,9 +121,9 @@ const SettingsManagement: React.FC<SettingsManagementProps> = ({
                 <Checkbox
                   id={`day-${day.index}`}
                   checked={settings.workingDays.includes(day.index)}
-                  onCheckedChange={(checked) =>
-                    handleWorkingDayChange(day.index, checked as boolean)
-                  }
+                  onCheckedChange={(checked) => {
+                    handleWorkingDayChange(day.index, checked as boolean);
+                  }}
                 />
                 <label
                   htmlFor={`day-${day.index}`}
