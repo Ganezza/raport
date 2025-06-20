@@ -1,4 +1,4 @@
-export interface Guru {
+export interface User {
   id: string;
   nama: string;
 }
@@ -13,7 +13,7 @@ export type AntrianStatus = "Menunggu" | "Diproses" | "Selesai";
 export interface Antrian {
   id: string;
   nomorAntrian: number;
-  guruId: string;
+  userId: string; // Changed from guruId to userId
   kelasId: string;
   tanggalCetak: string; // YYYY-MM-DD
   jamCetak: string; // HH:MM
@@ -29,7 +29,7 @@ export interface Setting {
 }
 
 export interface AppData {
-  guru: Guru[];
+  user: User[]; // Changed from guru to user
   kelas: Kelas[];
   antrian: Antrian[];
   setting: Setting;
