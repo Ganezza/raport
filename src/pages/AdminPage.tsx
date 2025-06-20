@@ -62,22 +62,25 @@ const AdminPage = () => {
   }, [session, loading, navigate, fetchInitialData, toast]);
 
   const handleSettingsChange = (newSettings: Setting) => {
+    console.log("AdminPage: handleSettingsChange called with new settings:", newSettings);
     if (appData) {
       setAppDataState(prev => prev ? { ...prev, setting: newSettings } : null);
+      console.log("AdminPage: appData.setting updated in state.");
     }
   };
 
   const handleSaveSettings = async () => {
     if (!appData) return;
+    console.log("AdminPage: handleSaveSettings called. Saving settings:", appData.setting);
     try {
       await updateSettings(appData.setting);
       toast({
         title: "Sukses!",
         description: "Pengaturan jadwal berhasil disimpan.",
       });
-      await fetchInitialData();
+      await fetchInitialData(); // Re-fetch data to ensure UI reflects latest saved state
     } catch (error) {
-      console.error("Failed to save settings:", error);
+      console.error("AdminPage: Failed to save settings:", error);
       toast({
         title: "Error",
         description: "Gagal menyimpan pengaturan jadwal.",
