@@ -7,59 +7,59 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { Guru } from "@/types/app";
+import { User } from "@/types/app"; // Changed Guru to User
 import { PlusCircle, Edit, Trash2, Upload } from "lucide-react";
 
-interface GuruManagementProps {
-  guruList: Guru[];
-  onAddGuru: (nama: string) => void;
-  onEditGuru: (id: string, nama: string) => void;
-  onDeleteGuru: (id: string) => void;
-  onAddMultipleGuru: (names: string[]) => void;
-  onDeleteAllGuru: () => void; // New prop for deleting all gurus
+interface UserManagementProps { // Changed interface name
+  userList: User[]; // Changed prop name
+  onAddUser: (nama: string) => void; // Changed prop name
+  onEditUser: (id: string, nama: string) => void; // Changed prop name
+  onDeleteUser: (id: string) => void; // Changed prop name
+  onAddMultipleUser: (names: string[]) => void; // Changed prop name
+  onDeleteAllUser: () => void; // Changed prop name
 }
 
-const GuruManagement: React.FC<GuruManagementProps> = ({
-  guruList,
-  onAddGuru,
-  onEditGuru,
-  onDeleteGuru,
-  onAddMultipleGuru,
-  onDeleteAllGuru, // Destructure new prop
+const UserManagement: React.FC<UserManagementProps> = ({ // Changed component name and prop type
+  userList, // Changed prop name
+  onAddUser, // Changed prop name
+  onEditUser, // Changed prop name
+  onDeleteUser, // Changed prop name
+  onAddMultipleUser, // Changed prop name
+  onDeleteAllUser, // Changed prop name
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [currentGuruName, setCurrentGuruName] = useState("");
-  const [editingGuruId, setEditingGuruId] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState(""); // Changed variable name
+  const [editingUserId, setEditingUserId] = useState<string | null>(null); // Changed variable name
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleSaveGuru = () => {
-    const trimmedAndUppercasedName = currentGuruName.trim().toUpperCase();
+  const handleSaveUser = () => { // Changed function name
+    const trimmedAndUppercasedName = currentUserName.trim().toUpperCase(); // Changed variable name
     if (!trimmedAndUppercasedName) {
-      toast({ title: "Error", description: "Nama Guru tidak boleh kosong.", variant: "destructive" });
+      toast({ title: "Error", description: "Nama User tidak boleh kosong.", variant: "destructive" }); // Changed text
       return;
     }
-    if (editingGuruId) {
-      onEditGuru(editingGuruId, trimmedAndUppercasedName);
-      toast({ title: "Sukses!", description: "Nama Guru berhasil diperbarui." });
+    if (editingUserId) { // Changed variable name
+      onEditUser(editingUserId, trimmedAndUppercasedName); // Changed function call
+      toast({ title: "Sukses!", description: "Nama User berhasil diperbarui." }); // Changed text
     } else {
-      onAddGuru(trimmedAndUppercasedName);
-      toast({ title: "Sukses!", description: "Guru berhasil ditambahkan." });
+      onAddUser(trimmedAndUppercasedName); // Changed function call
+      toast({ title: "Sukses!", description: "User berhasil ditambahkan." }); // Changed text
     }
-    setCurrentGuruName("");
-    setEditingGuruId(null);
+    setCurrentUserName(""); // Changed variable name
+    setEditingUserId(null); // Changed variable name
     setIsDialogOpen(false);
   };
 
   const openDialogForAdd = () => {
-    setCurrentGuruName("");
-    setEditingGuruId(null);
+    setCurrentUserName(""); // Changed variable name
+    setEditingUserId(null); // Changed variable name
     setIsDialogOpen(true);
   };
 
-  const openDialogForEdit = (guru: Guru) => {
-    setEditingGuruId(guru.id);
-    setCurrentGuruName(guru.nama);
+  const openDialogForEdit = (user: User) => { // Changed parameter name and type
+    setEditingUserId(user.id); // Changed variable name
+    setCurrentUserName(user.nama); // Changed variable name
     setIsDialogOpen(true);
   };
 
@@ -71,7 +71,7 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
     }
   };
 
-  const handleUploadGuru = () => {
+  const handleUploadUser = () => { // Changed function name
     if (!selectedFile) {
       toast({ title: "Error", description: "Mohon pilih file terlebih dahulu.", variant: "destructive" });
       return;
@@ -87,12 +87,12 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
         return;
       }
 
-      console.log("GuruManagement: Names parsed from file:", names);
-      onAddMultipleGuru(names);
+      console.log("UserManagement: Names parsed from file:", names); // Changed text
+      onAddMultipleUser(names); // Changed function call
 
-      toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
+      toast({ title: "Sukses!", description: `${names.length} user berhasil ditambahkan dari file.`, }); // Changed text
       setSelectedFile(null);
-      const fileInput = document.getElementById('guruFileInput') as HTMLInputElement;
+      const fileInput = document.getElementById('userInputFile') as HTMLInputElement; // Changed ID
       if (fileInput) fileInput.value = '';
     };
 
@@ -106,42 +106,42 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">Manajemen Guru</CardTitle>
+        <CardTitle className="text-2xl font-bold">Manajemen User</CardTitle> {/* Changed text */}
         <div className="flex space-x-2">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" onClick={openDialogForAdd}>
-                <PlusCircle className="mr-2 h-4 w-4" /> Tambah Guru
+                <PlusCircle className="mr-2 h-4 w-4" /> Tambah User {/* Changed text */}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{editingGuruId ? "Edit Guru" : "Tambah Guru Baru"}</DialogTitle>
+                <DialogTitle>{editingUserId ? "Edit User" : "Tambah User Baru"}</DialogTitle> {/* Changed text */}
                 <DialogDescription>
-                  {editingGuruId ? "Ubah nama guru." : "Masukkan nama guru baru."}
+                  {editingUserId ? "Ubah nama user." : "Masukkan nama user baru."} {/* Changed text */}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="guruName" className="text-right">
+                  <Label htmlFor="userName" className="text-right">
                     Nama
                   </Label>
                   <Input
-                    id="guruName"
-                    value={currentGuruName}
-                    onChange={(e) => setCurrentGuruName(e.target.value.toUpperCase())}
+                    id="userName"
+                    value={currentUserName} // Changed variable name
+                    onChange={(e) => setCurrentUserName(e.target.value.toUpperCase())} // Changed variable name
                     className="col-span-3"
                   />
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleSaveGuru}>Simpan</Button>
+                <Button onClick={handleSaveUser}>Simpan</Button> {/* Changed function call */}
               </DialogFooter>
             </DialogContent>
           </Dialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm" disabled={guruList.length === 0}>
+              <Button variant="destructive" size="sm" disabled={userList.length === 0}> {/* Changed prop name */}
                 <Trash2 className="mr-2 h-4 w-4" /> Hapus Semua
               </Button>
             </AlertDialogTrigger>
@@ -149,13 +149,13 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Tindakan ini akan menghapus <span className="font-bold">SEMUA</span> data guru secara permanen.
+                  Tindakan ini akan menghapus <span className="font-bold">SEMUA</span> data user secara permanen. {/* Changed text */}
                   Ini tidak dapat dibatalkan.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Batal</AlertDialogCancel>
-                <AlertDialogAction onClick={onDeleteAllGuru}>Hapus Semua</AlertDialogAction>
+                <AlertDialogAction onClick={onDeleteAllUser}>Hapus Semua</AlertDialogAction> {/* Changed function call */}
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -163,19 +163,19 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
       </CardHeader>
       <CardContent>
         <div className="mb-4 p-4 border rounded-md bg-gray-50">
-          <h3 className="text-lg font-semibold mb-2">Unggah Guru dari File Teks (.txt)</h3>
+          <h3 className="text-lg font-semibold mb-2">Unggah User dari File Teks (.txt)</h3> {/* Changed text */}
           <p className="text-sm text-gray-600 mb-3">
-            Unggah file teks dengan satu nama guru per baris.
+            Unggah file teks dengan satu nama user per baris. {/* Changed text */}
           </p>
           <div className="flex items-center space-x-2">
             <Input
-              id="guruFileInput"
+              id="userInputFile" // Changed ID
               type="file"
               accept=".txt"
               onChange={handleFileChange}
               className="flex-1"
             />
-            <Button onClick={handleUploadGuru} disabled={!selectedFile}>
+            <Button onClick={handleUploadUser} disabled={!selectedFile}> {/* Changed function call */}
               <Upload className="mr-2 h-4 w-4" /> Unggah
             </Button>
           </div>
@@ -185,27 +185,27 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
           <TableHeader>
             <TableRow>
               <TableHead>No.</TableHead>
-              <TableHead>Nama Guru</TableHead>
+              <TableHead>Nama User</TableHead> {/* Changed text */}
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {guruList.length === 0 ? (
+            {userList.length === 0 ? ( // Changed prop name
               <TableRow>
                 <TableCell colSpan={3} className="text-center">
-                  Belum ada data guru.
+                  Belum ada data user. {/* Changed text */}
                 </TableCell>
               </TableRow>
             ) : (
-              guruList.map((guru, index) => (
-                <TableRow key={guru.id}>
+              userList.map((user, index) => ( // Changed variable name
+                <TableRow key={user.id}>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{guru.nama}</TableCell>
+                  <TableCell>{user.nama}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => openDialogForEdit(guru)}>
+                    <Button variant="ghost" size="sm" onClick={() => openDialogForEdit(user)}> {/* Changed function call */}
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => onDeleteGuru(guru.id)}>
+                    <Button variant="ghost" size="sm" onClick={() => onDeleteUser(user.id)}> {/* Changed function call */}
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -219,4 +219,4 @@ const GuruManagement: React.FC<GuruManagementProps> = ({
   );
 };
 
-export default GuruManagement;
+export default UserManagement; // Changed export name
