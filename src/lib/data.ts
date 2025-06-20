@@ -282,8 +282,16 @@ export const getNextAvailableSlot = async (
     return newDate;
   };
 
+  // Helper to format date to YYYY-MM-DD in local time
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   let currentSearchDate = new Date(); // Always start search from today
-  currentSearchDate.setHours(0, 0, 0, 0); // Normalize today to start of day
+  currentSearchDate.setHours(0, 0, 0, 0); // Normalize today to start of day in local time
 
   const maxSearchDays = 365; // Prevent infinite loop, search up to a year ahead
   for (let i = 0; i < maxSearchDays; i++) {
@@ -313,7 +321,7 @@ export const getNextAvailableSlot = async (
 
       for (let j = currentSlotMinutes; j < endMinutesForDay; j += intervalAntarAntrian) {
         const potentialTime = formatTime(j);
-        const formattedDate = currentSearchDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const formattedDate = formatLocalDate(currentSearchDate); // Use local date formatting
         const slotKey = `${formattedDate} ${potentialTime}`;
 
         // Check if this slot is already taken by an existing antrian
