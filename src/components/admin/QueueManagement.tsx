@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Antrian, AntrianStatus, Guru, Kelas } from "@/types/app";
+import { Antrian, AntrianStatus, User, Kelas } from "@/types/app"; // Changed Guru to User
 import { Trash2, PlayCircle } from "lucide-react"; // Import PlayCircle icon
 
 interface QueueManagementProps {
   antrianList: Antrian[];
-  guruList: Guru[];
+  userList: User[]; // Changed from guruList to userList
   kelasList: Kelas[];
   onUpdateAntrianStatus: (id: string, status: AntrianStatus) => void;
   onDeleteAntrian: (id: string) => void;
@@ -17,14 +17,14 @@ interface QueueManagementProps {
 
 const QueueManagement: React.FC<QueueManagementProps> = ({
   antrianList,
-  guruList,
+  userList, // Changed from guruList
   kelasList,
   onUpdateAntrianStatus,
   onDeleteAntrian,
   onCallNextQueue, // Destructure new prop
 }) => {
-  const getGuruName = (guruId: string) => {
-    return guruList.find(g => g.id === guruId)?.nama || "N/A";
+  const getUserName = (userId: string) => { // Changed from getGuruName
+    return userList.find(u => u.id === userId)?.nama || "N/A"; // Changed from g and guruId
   };
 
   const getKelasName = (kelasId: string) => {
@@ -57,7 +57,7 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
           <TableHeader>
             <TableRow>
               <TableHead>No. Antrian</TableHead>
-              <TableHead>Guru</TableHead>
+              <TableHead>User</TableHead> {/* Changed from Guru */}
               <TableHead>Kelas</TableHead>
               <TableHead>Jadwal</TableHead>
               <TableHead>Status</TableHead>
@@ -75,7 +75,7 @@ const QueueManagement: React.FC<QueueManagementProps> = ({
               antrianList.map((antrian) => (
                 <TableRow key={antrian.id}>
                   <TableCell className="font-medium">{antrian.nomorAntrian}</TableCell>
-                  <TableCell>{getGuruName(antrian.guruId)}</TableCell>
+                  <TableCell>{getUserName(antrian.userId)}</TableCell> {/* Changed from getGuruName(antrian.guruId) */}
                   <TableCell>{getKelasName(antrian.kelasId)}</TableCell>
                   <TableCell>{antrian.tanggalCetak} {antrian.jamCetak}</TableCell>
                   <TableCell>
