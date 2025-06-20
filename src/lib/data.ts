@@ -42,15 +42,18 @@ export const getAppData = async (): Promise<AppData> => {
   if (settingError && settingError.code !== 'PGRST116') { // PGRST116 means no rows found
     console.error("getAppData: Error fetching settings:", settingError);
   } else if (settingData) {
-    setting = settingData;
+    // Merge fetched data with default settings to ensure all properties exist,
+    // especially for newly added columns like workingDays.
+    setting = { ...initializeDefaultSettings(), ...settingData };
     console.log("getAppData: Pengaturan berhasil dimuat:", setting);
   } else {
-    console.log("getAppData: Pengaturan tidak ditemukan.");
+    console.log("getAppData: Pengaturan tidak ditemukan, menggunakan default.");
+    setting = initializeDefaultSettings(); // Use default if not found
   }
 
   // Only initialize default data if the main settings are missing.
   // This prevents re-initializing user/kelas if they are intentionally emptied by the user.
-  if (!setting) {
+  if (!setting) { // This check might be redundant after the above logic, but kept for safety.
     console.log("getAppData: Pengaturan utama tidak ditemukan, memulai inisialisasi data default...");
     return await initializeAppData();
   }
@@ -304,6 +307,12 @@ export const getNextAvailableSlot = async (
       const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
       const isCurrentSearchDateToday = currentSearchDate.toDateString() === new Date().toDateString();
+
+      // If it's today and already past the end time, skip to next day
+      if (isCurrentSearchDateToday && currentTimeInMinutes >= endMinutesForDay) {
+        currentSearchDate = addDays(currentSearchDate, 1);
+        continue; // Go to next iteration of the outer loop
+      }
 
       // If it's today, start searching from the current time + interval, or jamMulai if current time is before jamMulai
       if (isCurrentSearchDateToday) {
