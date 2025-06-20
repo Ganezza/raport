@@ -1,22 +1,22 @@
-import { AppData, Guru, Kelas, Antrian, Setting } from "@/types/app";
+import { AppData, User, Kelas, Antrian, Setting } from "@/types/app"; // Changed Guru to User
 import { supabase } from "@/integrations/supabase/client";
 
 const SETTINGS_ID = "app_settings"; // Fixed ID for the single settings row
 
 export const getAppData = async (): Promise<AppData> => {
   console.log("getAppData: Memulai pengambilan data dari Supabase...");
-  let guru: Guru[] = [];
+  let user: User[] = []; // Changed from guru to user
   let kelas: Kelas[] = [];
   let antrian: Antrian[] = [];
   let setting: Setting | null = null;
 
-  // Fetch Guru
-  const { data: guruData, error: guruError } = await supabase.from('guru').select('*');
-  if (guruError) {
-    console.error("getAppData: Error fetching guru:", guruError);
+  // Fetch User (from 'guru' table in DB)
+  const { data: userData, error: userError } = await supabase.from('guru').select('*'); // Still 'guru' table in DB
+  if (userError) {
+    console.error("getAppData: Error fetching user:", userError); // Changed text
   } else {
-    guru = guruData || [];
-    console.log("getAppData: Guru berhasil dimuat:", guru.length);
+    user = userData || []; // Changed from guru to user
+    console.log("getAppData: User berhasil dimuat:", user.length); // Changed text
   }
 
   // Fetch Kelas
@@ -49,14 +49,14 @@ export const getAppData = async (): Promise<AppData> => {
   }
 
   // Only initialize default data if the main settings are missing.
-  // This prevents re-initializing guru/kelas if they are intentionally emptied by the user.
+  // This prevents re-initializing user/kelas if they are intentionally emptied by the user.
   if (!setting) {
     console.log("getAppData: Pengaturan utama tidak ditemukan, memulai inisialisasi data default...");
     return await initializeAppData();
   }
 
   const appData: AppData = {
-    guru,
+    user, // Changed from guru
     kelas,
     antrian,
     setting: setting, // Use the fetched setting
@@ -68,36 +68,36 @@ export const getAppData = async (): Promise<AppData> => {
 
 export const setAppData = async (data: AppData) => {
   // This function will now handle updates for individual parts of AppData
-  // It's better to have specific functions for updating guru, kelas, antrian, setting
+  // It's better to have specific functions for updating user, kelas, antrian, setting
   // For now, we'll just log a warning as this function will be refactored away.
-  console.warn("setAppData is deprecated. Use specific update functions for guru, kelas, antrian, setting.");
+  console.warn("setAppData is deprecated. Use specific update functions for user, kelas, antrian, setting."); // Changed text
 };
 
 // Specific functions for updating data in Supabase
-export const addGuru = async (guru: Guru) => {
-  const { data, error } = await supabase.from('guru').insert(guru).select();
+export const addUser = async (user: User) => { // Changed from addGuru
+  const { data, error } = await supabase.from('guru').insert(user).select(); // Still 'guru' table in DB
   if (error) throw error;
   return data[0];
 };
 
-export const updateGuru = async (guru: Guru) => {
-  const { data, error } = await supabase.from('guru').update(guru).eq('id', guru.id).select();
+export const updateUser = async (user: User) => { // Changed from updateGuru
+  const { data, error } = await supabase.from('guru').update(user).eq('id', user.id).select(); // Still 'guru' table in DB
   if (error) throw error;
   return data[0];
 };
 
-export const deleteGuru = async (id: string) => {
-  const { error } = await supabase.from('guru').delete().eq('id', id);
+export const deleteUser = async (id: string) => { // Changed from deleteGuru
+  const { error } = await supabase.from('guru').delete().eq('id', id); // Still 'guru' table in DB
   if (error) {
-    console.error("deleteGuru: Error deleting guru:", error); // Added logging
+    console.error("deleteUser: Error deleting user:", error); // Added logging, changed text
     throw error;
   }
 };
 
-export const deleteAllGuru = async () => {
-  const { error } = await supabase.from('guru').delete().neq('id', '0'); // Delete all where id is not '0' (effectively all rows)
+export const deleteAllUser = async () => { // Changed from deleteAllGuru
+  const { error } = await supabase.from('guru').delete().neq('id', '0'); // Still 'guru' table in DB
   if (error) {
-    console.error("deleteAllGuru: Error deleting all gurus:", error);
+    console.error("deleteAllUser: Error deleting all users:", error); // Changed text
     throw error;
   }
 };
@@ -170,7 +170,7 @@ const initializeDefaultSettings = (): Setting => {
 
 export const initializeAppData = async (): Promise<AppData> => {
   console.log("initializeAppData: Memulai inisialisasi data default...");
-  const defaultGuru: Guru[] = [
+  const defaultUser: User[] = [ // Changed from defaultGuru: Guru[]
     { id: generateUniqueId(), nama: "Budi Santoso" },
     { id: generateUniqueId(), nama: "Siti Aminah" },
     { id: generateUniqueId(), nama: "Joko Susilo" },
@@ -184,19 +184,19 @@ export const initializeAppData = async (): Promise<AppData> => {
 
   const defaultSetting = initializeDefaultSettings();
 
-  let initializedGuru: Guru[] = [];
+  let initializedUser: User[] = []; // Changed from initializedGuru: Guru[]
   let initializedKelas: Kelas[] = [];
   let initializedSetting: Setting | null = null;
 
-  // Insert default guru if table is empty
-  const { data: existingGuru } = await supabase.from('guru').select('id');
-  if (!existingGuru || existingGuru.length === 0) {
-    console.log("initializeAppData: Memasukkan guru default...");
-    const { data, error } = await supabase.from('guru').insert(defaultGuru).select();
-    if (error) console.error("initializeAppData: Error inserting default guru:", error);
-    else initializedGuru = data || [];
+  // Insert default user if table is empty (still 'guru' table in DB)
+  const { data: existingUser } = await supabase.from('guru').select('id'); // Still 'guru' table in DB
+  if (!existingUser || existingUser.length === 0) {
+    console.log("initializeAppData: Memasukkan user default..."); // Changed text
+    const { data, error } = await supabase.from('guru').insert(defaultUser).select(); // Still 'guru' table in DB
+    if (error) console.error("initializeAppData: Error inserting default user:", error); // Changed text
+    else initializedUser = data || []; // Changed from initializedGuru
   } else {
-    initializedGuru = (await supabase.from('guru').select('*')).data || [];
+    initializedUser = (await supabase.from('guru').select('*')).data || []; // Changed from initializedGuru
   }
 
   // Insert default kelas if table is empty
@@ -225,7 +225,7 @@ export const initializeAppData = async (): Promise<AppData> => {
   const currentAntrian = (await supabase.from('antrian').select('*').order('createdAt', { ascending: true })).data || [];
   
   const finalAppData: AppData = {
-    guru: initializedGuru,
+    user: initializedUser, // Changed from guru
     kelas: initializedKelas,
     antrian: currentAntrian,
     setting: initializedSetting || initializeDefaultSettings(),

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import GuruPage from "./pages/GuruPage";
+import UserPage from "./pages/UserPage"; // Changed from GuruPage
 import AdminPage from "./pages/AdminPage";
 import DisplayPage from "./pages/DisplayPage";
 import Login from "./pages/Login";
@@ -22,7 +22,7 @@ const App = () => (
         <SessionContextProvider>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/guru" element={<GuruPage />} />
+            <Route path="/user" element={<UserPage />} /> {/* Changed from /guru to /user */}
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/display" element={<DisplayPage />} />
             <Route path="/login" element={<Login />} />
