@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Menambahkan import ini
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
@@ -31,7 +31,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleSaveKelas = () => {
-    const trimmedAndUppercasedName = currentKelasName.trim().toUpperCase(); // Convert to uppercase
+    const trimmedAndUppercasedName = currentKelasName.trim().toUpperCase();
     if (!trimmedAndUppercasedName) {
       toast({ title: "Error", description: "Nama Kelas tidak boleh kosong.", variant: "destructive" });
       return;
@@ -77,13 +77,14 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      const names = content.split('\n').map(name => name.trim().toUpperCase()).filter(name => name.length > 0); // Convert to uppercase
+      const names = content.split('\n').map(name => name.trim().toUpperCase()).filter(name => name.length > 0);
 
       if (names.length === 0) {
         toast({ title: "Info", description: "File kosong atau tidak ada nama yang valid.", variant: "default" });
         return;
       }
 
+      console.log("KelasManagement: Names parsed from file:", names);
       onAddMultipleKelas(names);
 
       toast({ title: "Sukses!", description: `${names.length} kelas berhasil ditambahkan dari file.`, });
@@ -124,7 +125,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
                 <Input
                   id="kelasName"
                   value={currentKelasName}
-                  onChange={(e) => setCurrentKelasName(e.target.value.toUpperCase())} {/* Convert to uppercase */}
+                  onChange={(e) => setCurrentKelasName(e.target.value.toUpperCase())}
                   className="col-span-3"
                 />
               </div>
