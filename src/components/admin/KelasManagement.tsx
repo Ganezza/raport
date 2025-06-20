@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { Kelas } from "@/types/app";
 import { PlusCircle, Edit, Trash2, Upload } from "lucide-react";
@@ -15,6 +16,7 @@ interface KelasManagementProps {
   onEditKelas: (id: string, nama: string) => void;
   onDeleteKelas: (id: string) => void;
   onAddMultipleKelas: (names: string[]) => void;
+  onDeleteAllKelas: () => void; // New prop for deleting all kelas
 }
 
 const KelasManagement: React.FC<KelasManagementProps> = ({
@@ -23,6 +25,7 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
   onEditKelas,
   onDeleteKelas,
   onAddMultipleKelas,
+  onDeleteAllKelas, // Destructure new prop
 }) => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -104,37 +107,59 @@ const KelasManagement: React.FC<KelasManagementProps> = ({
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-2xl font-bold">Manajemen Kelas</CardTitle>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" onClick={openDialogForAdd}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Tambah Kelas
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingKelasId ? "Edit Kelas" : "Tambah Kelas Baru"}</DialogTitle>
-              <DialogDescription>
-                {editingKelasId ? "Ubah nama kelas." : "Masukkan nama kelas baru."}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="kelasName" className="text-right">
-                  Nama
-                </Label>
-                <Input
-                  id="kelasName"
-                  value={currentKelasName}
-                  onChange={(e) => setCurrentKelasName(e.target.value.toUpperCase())}
-                  className="col-span-3"
-                />
+        <div className="flex space-x-2">
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" onClick={openDialogForAdd}>
+                <PlusCircle className="mr-2 h-4 w-4" /> Tambah Kelas
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>{editingKelasId ? "Edit Kelas" : "Tambah Kelas Baru"}</DialogTitle>
+                <DialogDescription>
+                  {editingKelasId ? "Ubah nama kelas." : "Masukkan nama kelas baru."}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="kelasName" className="text-right">
+                    Nama
+                  </Label>
+                  <Input
+                    id="kelasName"
+                    value={currentKelasName}
+                    onChange={(e) => setCurrentKelasName(e.target.value.toUpperCase())}
+                    className="col-span-3"
+                  />
+                </div>
               </div>
-            </div>
-            <DialogFooter>
-              <Button onClick={handleSaveKelas}>Simpan</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button onClick={handleSaveKelas}>Simpan</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" size="sm" disabled={kelasList.length === 0}>
+                <Trash2 className="mr-2 h-4 w-4" /> Hapus Semua
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tindakan ini akan menghapus <span className="font-bold">SEMUA</span> data kelas secara permanen.
+                  Ini tidak dapat dibatalkan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction onClick={onDeleteAllKelas}>Hapus Semua</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="mb-4 p-4 border rounded-md bg-gray-50">

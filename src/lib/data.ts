@@ -122,6 +122,14 @@ export const deleteKelas = async (id: string) => {
   }
 };
 
+export const deleteAllKelas = async () => {
+  const { error } = await supabase.from('kelas').delete().neq('id', '0'); // Delete all where id is not '0' (effectively all rows)
+  if (error) {
+    console.error("deleteAllKelas: Error deleting all kelas:", error);
+    throw error;
+  }
+};
+
 export const addAntrian = async (antrian: Antrian) => {
   const { data, error } = await supabase.from('antrian').insert(antrian).select();
   if (error) throw error;
