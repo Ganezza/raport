@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   getAppData,
-  addGuru,
-  updateGuru,
-  deleteGuru,
-  deleteAllGuru,
+  addUser, // Changed from addGuru
+  updateUser, // Changed from updateGuru
+  deleteUser, // Changed from deleteGuru
+  deleteAllUser, // Changed from deleteAllGuru
   addKelas,
   updateKelas,
   deleteKelas,
-  deleteAllKelas, // Import new function
+  deleteAllKelas,
   updateAntrian,
   deleteAntrian,
   updateSettings,
   generateUniqueId,
 } from "@/lib/data";
-import { AppData, Guru, Kelas, Antrian, AntrianStatus, Setting } from "@/types/app";
+import { AppData, User, Kelas, Antrian, AntrianStatus, Setting } from "@/types/app"; // Changed Guru to User
 import SettingsManagement from "@/components/admin/SettingsManagement";
-import GuruManagement from "@/components/admin/GuruManagement";
+import UserManagement from "@/components/admin/UserManagement"; // Changed from GuruManagement
 import KelasManagement from "@/components/admin/KelasManagement";
 import QueueManagement from "@/components/admin/QueueManagement";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -86,66 +86,66 @@ const AdminPage = () => {
     }
   };
 
-  const handleAddGuru = async (nama: string) => {
+  const handleAddUser = async (nama: string) => { // Changed from handleAddGuru
     if (!appData) return;
     try {
-      const newGuru: Guru = { id: generateUniqueId(), nama };
-      await addGuru(newGuru);
-      toast({ title: "Sukses!", description: "Guru berhasil ditambahkan." });
+      const newUser: User = { id: generateUniqueId(), nama }; // Changed Guru to User
+      await addUser(newUser); // Changed addGuru
+      toast({ title: "Sukses!", description: "User berhasil ditambahkan." }); // Changed text
       await fetchInitialData();
     } catch (error) {
-      console.error("Failed to add guru:", error);
-      toast({ title: "Error", description: "Gagal menambahkan guru.", variant: "destructive" });
+      console.error("Failed to add user:", error); // Changed text
+      toast({ title: "Error", description: "Gagal menambahkan user.", variant: "destructive" }); // Changed text
     }
   };
 
-  const handleEditGuru = async (id: string, nama: string) => {
+  const handleEditUser = async (id: string, nama: string) => { // Changed from handleEditGuru
     if (!appData) return;
     try {
-      await updateGuru({ id, nama });
-      toast({ title: "Sukses!", description: "Nama Guru berhasil diperbarui." });
+      await updateUser({ id, nama }); // Changed updateGuru
+      toast({ title: "Sukses!", description: "Nama User berhasil diperbarui." }); // Changed text
       await fetchInitialData();
     } catch (error) {
-      console.error("Failed to edit guru:", error);
-      toast({ title: "Error", description: "Gagal memperbarui nama guru.", variant: "destructive" });
+      console.error("Failed to edit user:", error); // Changed text
+      toast({ title: "Error", description: "Gagal memperbarui nama user.", variant: "destructive" }); // Changed text
     }
   };
 
-  const handleDeleteGuru = async (id: string) => {
+  const handleDeleteUser = async (id: string) => { // Changed from handleDeleteGuru
     if (!appData) return;
     try {
-      await deleteGuru(id);
-      toast({ title: "Sukses!", description: "Guru berhasil dihapus." });
+      await deleteUser(id); // Changed deleteGuru
+      toast({ title: "Sukses!", description: "User berhasil dihapus." }); // Changed text
       await fetchInitialData();
     } catch (error) {
-      console.error("Failed to delete guru:", error);
-      toast({ title: "Error", description: "Gagal menghapus guru.", variant: "destructive" });
+      console.error("Failed to delete user:", error); // Changed text
+      toast({ title: "Error", description: "Gagal menghapus user.", variant: "destructive" }); // Changed text
     }
   };
 
-  const handleDeleteAllGuru = async () => {
+  const handleDeleteAllUser = async () => { // Changed from handleDeleteAllGuru
     if (!appData) return;
     try {
-      await deleteAllGuru();
-      toast({ title: "Sukses!", description: "Semua guru berhasil dihapus." });
+      await deleteAllUser(); // Changed deleteAllGuru
+      toast({ title: "Sukses!", description: "Semua user berhasil dihapus." }); // Changed text
       await fetchInitialData();
     } catch (error) {
-      console.error("Failed to delete all gurus:", error);
-      toast({ title: "Error", description: "Gagal menghapus semua guru.", variant: "destructive" });
+      console.error("Failed to delete all users:", error); // Changed text
+      toast({ title: "Error", description: "Gagal menghapus semua user.", variant: "destructive" }); // Changed text
     }
   };
 
-  const handleAddMultipleGuru = async (names: string[]) => {
+  const handleAddMultipleUser = async (names: string[]) => { // Changed from handleAddMultipleGuru
     if (!appData) return;
     try {
-      const newGuruEntries: Guru[] = names.map(name => ({ id: generateUniqueId(), nama: name }));
-      const { error } = await supabase.from('guru').insert(newGuruEntries);
+      const newUserEntries: User[] = names.map(name => ({ id: generateUniqueId(), nama: name })); // Changed Guru to User
+      const { error } = await supabase.from('guru').insert(newUserEntries); // Still 'guru' table in DB
       if (error) throw error;
-      toast({ title: "Sukses!", description: `${names.length} guru berhasil ditambahkan dari file.`, });
+      toast({ title: "Sukses!", description: `${names.length} user berhasil ditambahkan dari file.`, }); // Changed text
       await fetchInitialData();
     } catch (error) {
-      console.error("Failed to add multiple gurus:", error);
-      toast({ title: "Error", description: "Gagal menambahkan beberapa guru dari file.", variant: "destructive" });
+      console.error("Failed to add multiple users:", error); // Changed text
+      toast({ title: "Error", description: "Gagal menambahkan beberapa user dari file.", variant: "destructive" }); // Changed text
     }
   };
 
@@ -334,28 +334,28 @@ const AdminPage = () => {
         <Tabs defaultValue="antrian" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="antrian">Antrian</TabsTrigger>
-            <TabsTrigger value="guru">Guru</TabsTrigger>
+            <TabsTrigger value="user">User</TabsTrigger> {/* Changed from guru */}
             <TabsTrigger value="kelas">Kelas</TabsTrigger>
             <TabsTrigger value="settings">Pengaturan</TabsTrigger>
           </TabsList>
           <TabsContent value="antrian" className="mt-6">
             <QueueManagement
               antrianList={appData.antrian}
-              guruList={appData.guru}
+              userList={appData.user} // Changed from guruList
               kelasList={appData.kelas}
               onUpdateAntrianStatus={handleUpdateAntrianStatus}
               onDeleteAntrian={handleDeleteAntrian}
               onCallNextQueue={handleCallNextQueue}
             />
           </TabsContent>
-          <TabsContent value="guru" className="mt-6">
-            <GuruManagement
-              guruList={appData.guru}
-              onAddGuru={handleAddGuru}
-              onEditGuru={handleEditGuru}
-              onDeleteGuru={handleDeleteGuru}
-              onAddMultipleGuru={handleAddMultipleGuru}
-              onDeleteAllGuru={handleDeleteAllGuru}
+          <TabsContent value="user" className="mt-6"> {/* Changed from guru */}
+            <UserManagement // Changed from GuruManagement
+              userList={appData.user} // Changed from guruList
+              onAddUser={handleAddUser} // Changed from onAddGuru
+              onEditUser={handleEditUser} // Changed from onEditGuru
+              onDeleteUser={handleDeleteUser} // Changed from onDeleteGuru
+              onAddMultipleUser={handleAddMultipleUser} // Changed from onAddMultipleGuru
+              onDeleteAllUser={handleDeleteAllUser} // Changed from onDeleteAllGuru
             />
           </TabsContent>
           <TabsContent value="kelas" className="mt-6">
