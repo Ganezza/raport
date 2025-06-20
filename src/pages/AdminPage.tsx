@@ -4,6 +4,7 @@ import {
   addGuru,
   updateGuru,
   deleteGuru,
+  deleteAllGuru, // Import new function
   addKelas,
   updateKelas,
   deleteKelas,
@@ -118,6 +119,18 @@ const AdminPage = () => {
     } catch (error) {
       console.error("Failed to delete guru:", error);
       toast({ title: "Error", description: "Gagal menghapus guru.", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteAllGuru = async () => {
+    if (!appData) return;
+    try {
+      await deleteAllGuru();
+      toast({ title: "Sukses!", description: "Semua guru berhasil dihapus." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to delete all gurus:", error);
+      toast({ title: "Error", description: "Gagal menghapus semua guru.", variant: "destructive" });
     }
   };
 
@@ -329,6 +342,7 @@ const AdminPage = () => {
               onEditGuru={handleEditGuru}
               onDeleteGuru={handleDeleteGuru}
               onAddMultipleGuru={handleAddMultipleGuru}
+              onDeleteAllGuru={handleDeleteAllGuru}
             />
           </TabsContent>
           <TabsContent value="kelas" className="mt-6">
