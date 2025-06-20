@@ -4,10 +4,11 @@ import {
   addGuru,
   updateGuru,
   deleteGuru,
-  deleteAllGuru, // Import new function
+  deleteAllGuru,
   addKelas,
   updateKelas,
   deleteKelas,
+  deleteAllKelas, // Import new function
   updateAntrian,
   deleteAntrian,
   updateSettings,
@@ -185,6 +186,18 @@ const AdminPage = () => {
     }
   };
 
+  const handleDeleteAllKelas = async () => {
+    if (!appData) return;
+    try {
+      await deleteAllKelas();
+      toast({ title: "Sukses!", description: "Semua kelas berhasil dihapus." });
+      await fetchInitialData();
+    } catch (error) {
+      console.error("Failed to delete all kelas:", error);
+      toast({ title: "Error", description: "Gagal menghapus semua kelas.", variant: "destructive" });
+    }
+  };
+
   const handleAddMultipleKelas = async (names: string[]) => {
     if (!appData) return;
     try {
@@ -352,6 +365,7 @@ const AdminPage = () => {
               onEditKelas={handleEditKelas}
               onDeleteKelas={handleDeleteKelas}
               onAddMultipleKelas={handleAddMultipleKelas}
+              onDeleteAllKelas={handleDeleteAllKelas}
             />
           </TabsContent>
           <TabsContent value="settings" className="mt-6">
