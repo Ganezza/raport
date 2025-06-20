@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { useSession } from "@/integrations/supabase/auth.tsx"; // Diperbarui ke .tsx
+import { useSession } from "@/integrations/supabase/auth.tsx";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 const Index = () => {
   const navigate = useNavigate();
@@ -48,23 +49,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h1
-          className="text-4xl font-bold mb-4 text-gray-800 cursor-pointer select-none"
-          onClick={handleSecretClick}
-        >
-          Selamat Datang di Aplikasi Antrian Cetak Rapor
-        </h1>
-        <p className="text-xl text-gray-600 mb-8">Pilih peran Anda untuk melanjutkan:</p>
-        <div className="flex flex-col space-y-4 max-w-xs mx-auto">
-          <Link to="/guru">
-            <Button className="w-full py-3 text-lg">Halaman Guru (Pengajuan Antrian)</Button>
-          </Link>
-          <Link to="/display">
-            <Button className="w-full py-3 text-lg" variant="outline">Cek Proses Antrian</Button>
-          </Link>
-        </div>
-      </div>
+      <Card className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+        <CardHeader className="text-center">
+          <CardTitle
+            className="text-3xl font-bold mb-4 text-gray-800 cursor-pointer select-none"
+            onClick={handleSecretClick}
+          >
+            Selamat Datang di Aplikasi Antrian Cetak Rapor
+          </CardTitle>
+          <p className="text-lg text-gray-600 mb-8">Pilih peran Anda untuk melanjutkan:</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col space-y-4 max-w-xs mx-auto">
+            <Link to="/guru">
+              <Button className="w-full py-3 text-lg">Halaman Guru (Pengajuan Antrian)</Button>
+            </Link>
+            <Link to="/display">
+              <Button className="w-full py-3 text-lg" variant="outline">Cek Proses Antrian</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

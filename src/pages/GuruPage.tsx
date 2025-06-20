@@ -9,13 +9,14 @@ import { getAppData, generateUniqueId, getNextQueueNumber, getNextAvailableSlot,
 import { Antrian, Guru, Kelas, Setting } from "@/types/app";
 import { QRCodeSVG } from 'qrcode.react';
 import QRCode from 'qrcode';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 const GuruPage = () => {
   const { toast } = useToast();
   const [guruList, setGuruList] = useState<Guru[]>([]);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [antrianList, setAntrianList] = useState<Antrian[]>([]);
-  const [settings, setSettings] = useState<Setting | null>(null); // Use Setting type
+  const [settings, setSettings] = useState<Setting | null>(null);
 
   const [selectedGuruId, setSelectedGuruId] = useState<string>("");
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
@@ -25,7 +26,6 @@ const GuruPage = () => {
 
   const [generatedAntrian, setGeneratedAntrian] = useState<Antrian | null>(null);
 
-  // New states for reprint feature
   const [showNewQueueForm, setShowNewQueueForm] = useState(true);
   const [reprintSelectedGuruId, setReprintSelectedGuruId] = useState<string>("");
   const [foundActiveAntrian, setFoundActiveAntrian] = useState<Antrian | null>(null);
@@ -260,185 +260,188 @@ const GuruPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center mb-6">Aplikasi Antrian Cetak Rapor</h2>
-
-        <div className="flex space-x-4 mb-6">
-          <Button
-            className="flex-1"
-            variant={showNewQueueForm ? "default" : "outline"}
-            onClick={() => {
-              setShowNewQueueForm(true);
-              setGeneratedAntrian(null);
-              setFoundActiveAntrian(null);
-              setReprintSelectedGuruId("");
-            }}
-          >
-            Cetak Antrian Baru
-          </Button>
-          <Button
-            className="flex-1"
-            variant={!showNewQueueForm ? "default" : "outline"}
-            onClick={() => {
-              setShowNewQueueForm(false);
-              setGeneratedAntrian(null);
-              setFoundActiveAntrian(null);
-              setSelectedGuruId("");
-              setSelectedKelasId("");
-              setCheckbox1(false);
-              setCheckbox2(false);
-              setCheckbox3(false);
-            }}
-          >
-            Cetak Ulang Kartu Antrian
-          </Button>
-        </div>
-
-        {showNewQueueForm ? (
-          !generatedAntrian ? (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="guru">Nama Guru</Label>
-                <Select onValueChange={setSelectedGuruId} value={selectedGuruId}>
-                  <SelectTrigger id="guru">
-                    <SelectValue placeholder="Pilih Guru" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {guruList.map((guru) => (
-                      <SelectItem
-                        key={guru.id}
-                        value={guru.id}
-                        disabled={isGuruAlreadyQueued(guru.id)}
-                      >
-                        {guru.nama} {isGuruAlreadyQueued(guru.id) && "(Sudah Antri)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="kelas">Kelas</Label>
-                <Select onValueChange={setSelectedKelasId} value={selectedKelasId}>
-                  <SelectTrigger id="kelas">
-                    <SelectValue placeholder="Pilih Kelas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {kelasList.map((kelas) => (
-                      <SelectItem
-                        key={kelas.id}
-                        value={kelas.id}
-                        disabled={isKelasAlreadyQueued(kelas.id)}
-                      >
-                        {kelas.nama} {isKelasAlreadyQueued(kelas.id) && "(Sudah Digunakan)"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2 mt-4">
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="checkbox1" checked={checkbox1} onCheckedChange={(checked) => setCheckbox1(!!checked)} />
-                  <Label htmlFor="checkbox1">Nilai dan CP sudah sesuai dan final</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="checkbox2" checked={checkbox2} onCheckedChange={(checked) => setCheckbox2(!!checked)} />
-                  <Label htmlFor="checkbox2">Data murid sudah benar</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox id="checkbox3" checked={checkbox3} onCheckedChange={(checked) => setCheckbox3(!!checked)} />
-                  <Label htmlFor="checkbox3">Bertanggung jawab dalam proses cetak</Label>
-                </div>
-              </div>
-
-              <Button
-                className="w-full mt-6"
-                onClick={handleCetakAntrian}
-                disabled={!isCetakButtonEnabled}
-              >
-                CETAK NOMOR ANTRIAN
-              </Button>
-            </div>
-          ) : (
-            <div className="text-center space-y-4">
-              <h3 className="text-xl font-semibold">Nomor Antrian Anda:</h3>
-              <p className="text-5xl font-bold text-blue-600">{generatedAntrian.nomorAntrian}</p>
-              <div className="flex justify-center my-4">
-                <QRCodeSVG
-                  value={JSON.stringify({
-                    id: generatedAntrian.id,
-                    nomor: generatedAntrian.nomorAntrian,
-                    guru: guruList.find(g => g.id === generatedAntrian.guruId)?.nama,
-                    kelas: kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama,
-                    jadwal: `${generatedAntrian.tanggalCetak} ${generatedAntrian.jamCetak}`
-                  })}
-                  size={180}
-                  level="H"
-                  includeMargin={false}
-                />
-              </div>
-              <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === generatedAntrian.guruId)?.nama}</span></p>
-              <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama}</span></p>
-              <p>Tanggal & Jam Cetak: <span className="font-medium">{generatedAntrian.tanggalCetak} Pukul {generatedAntrian.jamCetak}</span></p>
-              <Button className="w-full mt-6" onClick={() => printQueueCard(generatedAntrian)}>
-                Cetak / Unduh Kartu Antrian
-              </Button>
-              <Button variant="outline" className="w-full mt-2" onClick={() => setGeneratedAntrian(null)}>
-                Kembali ke Form
-              </Button>
-            </div>
-          )
-        ) : (
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="reprintGuru">Cari Antrian Aktif Berdasarkan Nama Guru</Label>
-              <Select onValueChange={setReprintSelectedGuruId} value={reprintSelectedGuruId}>
-                <SelectTrigger id="reprintGuru">
-                  <SelectValue placeholder="Pilih Guru" />
-                </SelectTrigger>
-                <SelectContent>
-                  {guruList.map((guru) => (
-                    <SelectItem key={guru.id} value={guru.id}>
-                      {guru.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button className="w-full" onClick={handleSearchActiveQueue}>
-              Cari Antrian Aktif
+      <Card className="w-full max-w-md bg-white p-8 rounded-lg shadow-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold mb-6">Pengajuan Antrian Cetak Rapor</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex space-x-4 mb-6">
+            <Button
+              className="flex-1"
+              variant={showNewQueueForm ? "default" : "outline"}
+              onClick={() => {
+                setShowNewQueueForm(true);
+                setGeneratedAntrian(null);
+                setFoundActiveAntrian(null);
+                setReprintSelectedGuruId("");
+              }}
+            >
+              Cetak Antrian Baru
             </Button>
+            <Button
+              className="flex-1"
+              variant={!showNewQueueForm ? "default" : "outline"}
+              onClick={() => {
+                setShowNewQueueForm(false);
+                setGeneratedAntrian(null);
+                setFoundActiveAntrian(null);
+                setSelectedGuruId("");
+                setSelectedKelasId("");
+                setCheckbox1(false);
+                setCheckbox2(false);
+                setCheckbox3(false);
+              }}
+            >
+              Cetak Ulang Kartu Antrian
+            </Button>
+          </div>
 
-            {foundActiveAntrian && (
-              <div className="text-center space-y-4 mt-6 p-4 border rounded-lg bg-gray-50">
-                <h3 className="text-xl font-semibold">Antrian Aktif Ditemukan:</h3>
-                <p className="text-5xl font-bold text-blue-600">{foundActiveAntrian.nomorAntrian}</p>
+          {showNewQueueForm ? (
+            !generatedAntrian ? (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="guru">Nama Guru</Label>
+                  <Select onValueChange={setSelectedGuruId} value={selectedGuruId}>
+                    <SelectTrigger id="guru">
+                      <SelectValue placeholder="Pilih Guru" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {guruList.map((guru) => (
+                        <SelectItem
+                          key={guru.id}
+                          value={guru.id}
+                          disabled={isGuruAlreadyQueued(guru.id)}
+                        >
+                          {guru.nama} {isGuruAlreadyQueued(guru.id) && "(Sudah Antri)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="kelas">Kelas</Label>
+                  <Select onValueChange={setSelectedKelasId} value={selectedKelasId}>
+                    <SelectTrigger id="kelas">
+                      <SelectValue placeholder="Pilih Kelas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kelasList.map((kelas) => (
+                        <SelectItem
+                          key={kelas.id}
+                          value={kelas.id}
+                          disabled={isKelasAlreadyQueued(kelas.id)}
+                        >
+                          {kelas.nama} {isKelasAlreadyQueued(kelas.id) && "(Sudah Digunakan)"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2 mt-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="checkbox1" checked={checkbox1} onCheckedChange={(checked) => setCheckbox1(!!checked)} />
+                    <Label htmlFor="checkbox1">Nilai dan CP sudah sesuai dan final</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="checkbox2" checked={checkbox2} onCheckedChange={(checked) => setCheckbox2(!!checked)} />
+                    <Label htmlFor="checkbox2">Data murid sudah benar</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox id="checkbox3" checked={checkbox3} onCheckedChange={(checked) => setCheckbox3(!!checked)} />
+                    <Label htmlFor="checkbox3">Bertanggung jawab dalam proses cetak</Label>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full mt-6"
+                  onClick={handleCetakAntrian}
+                  disabled={!isCetakButtonEnabled}
+                >
+                  CETAK NOMOR ANTRIAN
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center space-y-4">
+                <h3 className="text-xl font-semibold">Nomor Antrian Anda:</h3>
+                <p className="text-5xl font-bold text-blue-600">{generatedAntrian.nomorAntrian}</p>
                 <div className="flex justify-center my-4">
                   <QRCodeSVG
                     value={JSON.stringify({
-                      id: foundActiveAntrian.id,
-                      nomor: foundActiveAntrian.nomorAntrian,
-                      guru: guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama,
-                      kelas: kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama,
-                      jadwal: `${foundActiveAntrian.tanggalCetak} ${foundActiveAntrian.jamCetak}`
+                      id: generatedAntrian.id,
+                      nomor: generatedAntrian.nomorAntrian,
+                      guru: guruList.find(g => g.id === generatedAntrian.guruId)?.nama,
+                      kelas: kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama,
+                      jadwal: `${generatedAntrian.tanggalCetak} ${generatedAntrian.jamCetak}`
                     })}
                     size={180}
                     level="H"
                     includeMargin={false}
                   />
                 </div>
-                <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama}</span></p>
-                <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama}</span></p>
-                <p>Tanggal & Jam Cetak: <span className="font-medium">{foundActiveAntrian.tanggalCetak} Pukul {foundActiveAntrian.jamCetak}</span></p>
-                <Button className="w-full mt-6" onClick={() => printQueueCard(foundActiveAntrian)}>
-                  Cetak Ulang Kartu Antrian
+                <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === generatedAntrian.guruId)?.nama}</span></p>
+                <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === generatedAntrian.kelasId)?.nama}</span></p>
+                <p>Tanggal & Jam Cetak: <span className="font-medium">{generatedAntrian.tanggalCetak} Pukul {generatedAntrian.jamCetak}</span></p>
+                <Button className="w-full mt-6" onClick={() => printQueueCard(generatedAntrian)}>
+                  Cetak / Unduh Kartu Antrian
+                </Button>
+                <Button variant="outline" className="w-full mt-2" onClick={() => setGeneratedAntrian(null)}>
+                  Kembali ke Form
                 </Button>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+            )
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="reprintGuru">Cari Antrian Aktif Berdasarkan Nama Guru</Label>
+                <Select onValueChange={setReprintSelectedGuruId} value={reprintSelectedGuruId}>
+                  <SelectTrigger id="reprintGuru">
+                    <SelectValue placeholder="Pilih Guru" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {guruList.map((guru) => (
+                      <SelectItem key={guru.id} value={guru.id}>
+                        {guru.nama}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button className="w-full" onClick={handleSearchActiveQueue}>
+                Cari Antrian Aktif
+              </Button>
+
+              {foundActiveAntrian && (
+                <div className="text-center space-y-4 mt-6 p-4 border rounded-lg bg-gray-50">
+                  <h3 className="text-xl font-semibold">Antrian Aktif Ditemukan:</h3>
+                  <p className="text-5xl font-bold text-blue-600">{foundActiveAntrian.nomorAntrian}</p>
+                  <div className="flex justify-center my-4">
+                    <QRCodeSVG
+                      value={JSON.stringify({
+                        id: foundActiveAntrian.id,
+                        nomor: foundActiveAntrian.nomorAntrian,
+                        guru: guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama,
+                        kelas: kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama,
+                        jadwal: `${foundActiveAntrian.tanggalCetak} ${foundActiveAntrian.jamCetak}`
+                      })}
+                      size={180}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+                  <p>Nama Guru: <span className="font-medium">{guruList.find(g => g.id === foundActiveAntrian.guruId)?.nama}</span></p>
+                  <p>Kelas: <span className="font-medium">{kelasList.find(k => k.id === foundActiveAntrian.kelasId)?.nama}</span></p>
+                  <p>Tanggal & Jam Cetak: <span className="font-medium">{foundActiveAntrian.tanggalCetak} Pukul {foundActiveAntrian.jamCetak}</span></p>
+                  <Button className="w-full mt-6" onClick={() => printQueueCard(foundActiveAntrian)}>
+                    Cetak Ulang Kartu Antrian
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
